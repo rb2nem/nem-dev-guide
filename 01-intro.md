@@ -43,8 +43,40 @@ in this document the two environments.
 If you don't run your own NIS instance, but still want to work in the testnet, you can find a list of NIS instance part of the testnet at
 [http://bob.nem.ninja:8765/#/nodes/](http://bob.nem.ninja:8765/#/nodes/).
 
-## Technical links
+## Docker config
 
+A docker config has been implemented to accompany this dev guide. It is located in the `docker/` subdirectory of this very repository.
+It is a docker image based on Ubuntu 16.04, the latest long term support release available.
+When you run the container, it start a NIS node on the testnet.
+
+NIS is started by [supervisord](http://www.supervisord.org). The NIS data is stored under /var/lib/nem, and the logs are available at 
+`/var/log/nis-stderr.log` and `/var/log/nis-stdout.log`.
+
+### Using the docker config
+To build the Docker image, go in the subdirectory and issue the build command:
+```
+cd docker/
+docker build -t testdev .
+```
+You can now run a container based on the image. The best and advised solution is to create a directory on your host in which the 
+data of NIS will be persistently stored. That way you can create a new container without having to redownload the whole NEM blockchain
+(eg in case of upgrades of NIS). In our example we will store the data in `/data/nis-data`, but you can choose another location as long
+as you pass it as an absolute path (ie the path must start with `/`).
+```
+persistent_location="/data/nis-data"
+[[ -d $persistent_location ]] || mkdir $persistent_location
+docker run -it --rm -v $persistent_location:/var/lib/nem -p 7890:7890 testdev bash
+```
+
+This will drop you in a shell from which you can replicate the commands in this dev guide. The NIS is listening on localhost port 7890.
+If you want to make NIS available from your host, you just have to pass this additional flags: `-p 7890:7890`.
+
+### Customising the docker config
+You can of course customise the docker image built. Just remember that the Dockerfile of this guide might also evolve. If you want to 
+follow the changes of it, you might have to merge your changes. Strategies to do that might be to use `git stash` or a dedicated git branch
+which you rebase. Explaining this is out of scope of this guide though.
+
+## Technical links
 
 ### Papers
 * [NEM technical paper](http://blog.nem.io/nem-technical-report/)
