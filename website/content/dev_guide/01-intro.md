@@ -1,4 +1,13 @@
-# Introduction
++++
+next = "/dev_guide/99-references"
+prev = "/dev_guide/"
+weight = 5
+title = "Introduction"
+date = "2017-03-26T15:02:00+02:00"
+toc = true
+
++++
+
 
 ## Nem Presentation
 
