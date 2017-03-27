@@ -11,7 +11,7 @@ pluralizeListTitles = "false"
 plainIdAnchors = "true"
 
 [params]
-    title = "Nem Developer's Guide"
-    author = "Nem Project"
-    description = "Resources for using and developing on NEM"
-
+title = "Nem Developer's Guide"
+author = "Nem Project"
+description = "Resources for using and developing on NEM"
+editURL = "https://github.com/rb2nem/nem-dev-guide/edit/master/website/content/"
