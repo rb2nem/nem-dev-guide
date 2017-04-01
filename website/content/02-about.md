@@ -1,6 +1,6 @@
 +++
 prev = "/01-intro"
-next = "/99-references"
+next = "/03-setting-up-environment"
 weight = 20
 title = "About this guide"
 date = "2017-04-01T15:02:00+02:00"
@@ -29,7 +29,7 @@ many other goodies. Check its [documentation](https://httpie.org/doc) for more d
 httpie also outputs colored and readable information about the request and its response. Example in this guide will include httpie's output
 when relevant. As an example, here is the output when querying google.com, where oyu can see the first line is the command executed, then comes the request, followed by the response headers and the response body:
 
-{{< code "code/about_google.html" >}} 
+{{< httpie "code/about_google.html" >}} 
 
 ## Docker config
 
@@ -44,7 +44,7 @@ NIS is started by [supervisord](http://www.supervisord.org). The NIS data is sto
 To build the Docker image, go in the subdirectory and issue the build command:
 ```
 cd docker/
-docker build -t testdev .
+docker build -t nemdev .
 ```
 You can now run a container based on the image. The best and advised solution is to create a directory on your host in which the 
 data of NIS will be persistently stored. That way you can create a new container without having to redownload the whole NEM blockchain
@@ -53,7 +53,7 @@ as you pass it as an absolute path (ie the path must start with `/`).
 ```
 persistent_location="/data/nis-data"
 [[ -d $persistent_location ]] || mkdir $persistent_location
-docker run -it --rm -v $persistent_location:/var/lib/nem -p 7890:7890 testdev bash
+docker run -it --rm -v $persistent_location:/var/lib/nem -p 7890:7890 nemdev bash
 ```
 
 This will drop you in a shell from which you can replicate the commands in this dev guide. The NIS is listening on localhost port 7890.
