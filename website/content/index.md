@@ -1,7 +1,7 @@
 +++
 icon = "<b>NEM Developer's Guide</b>"
 chapter = true
-next = "/dev_guide/01-intro"
+next = "/01-intro"
 #prev = "/prev/path"
 weight = 0
 title = "NEM's Developer Guide"

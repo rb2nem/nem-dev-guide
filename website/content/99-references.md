@@ -1,7 +1,7 @@
 +++
 #next = "/next/path"
-prev = "/dev_guide/01-intro"
-weight = 5
+prev = "/02-about"
+weight = 990
 title = "References"
 date = "2017-03-26T15:02:00+02:00"
 toc = true

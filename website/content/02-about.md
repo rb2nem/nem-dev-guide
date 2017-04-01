@@ -1,7 +1,7 @@
 +++
-next = "/dev_guide/01-intro"
-prev = "/dev_guide/99-references"
-weight = 5
+prev = "/01-intro"
+next = "/99-references"
+weight = 20
 title = "About this guide"
 date = "2017-04-01T15:02:00+02:00"
 toc = true
@@ -10,6 +10,14 @@ toc = true
 
 This guide is a work in progress, and its organisation might evolve significantly. This page should however give an up to date
 overview of to use it.
+
+## Help improve the guide
+
+Every page of this guide is editable by everyone in the web browser on Github thanks to the link "Edit this page" in the upper right corner.
+Clicking this link will lead you to Github, asking you to [fork the repository](https://help.github.com/articles/fork-a-repo/) to edit the page.
+After you save your changes in your own copy
+of the repository, you can send a [pull request](https://help.github.com/articles/about-pull-requests/) to have your changes included in the guide.
+Help us improve this guide!
 
 ## Tools
 
@@ -25,7 +33,7 @@ when relevant. As an example, here is the output when querying google.com, where
 
 ## Docker config
 
-A docker config has been implemented to accompany this dev guide. It is located in the `docker/` subdirectory of this very repository.
+A docker config has been implemented to accompany this dev guide. It is located in the [`docker/` subdirectory of this very repository](https://github.com/rb2nem/nem-dev-guide).
 It is a docker image based on Ubuntu 16.04, the latest long term support release available.
 When you run the container, it start a NIS node on the testnet.
 
