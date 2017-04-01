@@ -1,4 +1,0 @@
-
-http://gohugo.io/overview/installing/
-http://matcornic.github.io/hugo-learn-doc/basics/
-hugo -d ../../nem_dev_guide_site/
