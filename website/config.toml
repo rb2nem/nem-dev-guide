@@ -9,6 +9,7 @@ canonifyURLs = "true"
 relativeURLs = "false"
 pluralizeListTitles = "false"
 plainIdAnchors = "true"
+googleAnalytics = "UA-96593681-1"
 
 [params]
 title = "Nem Developer's Guide"
