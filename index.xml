@@ -281,8 +281,15 @@ We get code 5, meaning the node is booted. Other possible &lt;a href=&#34;http:/
 &lt;li&gt;&lt;a href=&#34;http://bob.nem.ninja/docs/&#34;&gt;NIS API&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/NemProject&#34;&gt;Nem&amp;rsquo;s Github&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://freedom-to-tinker.com/blog/randomwalker/the-princeton-bitcoin-textbook-is-now-freely-available/&#34;&gt;Bitcoin and Cryptocurrency Technologies&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;libraries&#34;&gt;Libraries&lt;/h3&gt;
+
+&lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://github.com/QuantumMechanics/NEM-sdk&#34;&gt;nem-sdk&lt;/a&gt;, a javascript/nodejs sdk for nem and the browser.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/nikhiljha/nem-api&#34;&gt;nem-api&lt;/a&gt;, an API Wrapper for the NIS Layer of the NEM Blockchain Platform.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/nikhiljha/nem-api&#34;&gt;nem-api&lt;/a&gt;, a javascript API Wrapper for the NIS Layer of the NEM Blockchain Platform.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/NEMChina/nem-apps&#34;&gt;nem-apps&lt;/a&gt;, a java library to initiate, co-sign and monitor transactions&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/NemProject/csharp2nem&#34;&gt;csharp2nem&lt;/a&gt;, a C# library&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
