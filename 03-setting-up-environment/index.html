@@ -250,11 +250,11 @@
 
 <h2 id="using-the-docker-container">Using the docker container</h2>
 
-<p>We have already seen <a href="https://rb2nem.github.io/nem-dev-guide/02-about/#docker-config">how to build the docker image</a> accompanying this guide. Let&rsquo;s now us it!</p>
+<p>We have already seen <a href="https://rb2nem.github.io/nem-dev-guide/02-about/#docker-config">how to run the docker container</a> accompanying this guide. Let&rsquo;s now use it!</p>
 
 <p>As explained in the description of the docker image, we start it with this command</p>
 
-<pre><code class="language-bash">nem:~$ docker run -it --rm -v $persistent_location:/var/lib/nem -p 7890:7890 nemdev bash
+<pre><code class="language-bash">nem:~$ docker/run.sh
 </code></pre>
 
 <p>This drops you in a bash shell running in the container, where a NIS instance has been started on the testnet. You can validate that NIS

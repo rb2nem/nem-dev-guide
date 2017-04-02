@@ -232,6 +232,7 @@
 <li><a href="#docker-config">Docker config</a>
 <ul>
 <li><a href="#using-the-docker-config">Using the docker config</a></li>
+<li><a href="#manually-building-the-docker-image">Manually building the docker image</a></li>
 <li><a href="#customising-the-docker-config">Customising the docker config</a></li>
 </ul></li>
 </ul></li>
@@ -311,7 +312,22 @@ When you run the container, it start a NIS node on the testnet.</p>
 
 <h3 id="using-the-docker-config">Using the docker config</h3>
 
-<p>To build the Docker image, go in the subdirectory and issue the build command:</p>
+<p>A <code>run.sh</code> script is available in the <code>/docker</code> directory.</p>
+
+<p>Before running it, create a directory where the container will store its persistent data. This is needed to
+avoid a full blockchain download at every update of the image.</p>
+
+<p>Then simply execute the script:</p>
+
+<pre><code>docker/run.sh
+</code></pre>
+
+<p>It will prompt you for the path directory which will host persistent data, then builds and run the container.
+It drops you in a bash shell inside the container.</p>
+
+<h3 id="manually-building-the-docker-image">Manually building the docker image</h3>
+
+<p>If you want to do it yourself, here it is. To build the Docker image, go in the <code>docker</code>subdirectory and issue the build command:</p>
 
 <pre><code>cd docker/
 docker build -t nemdev .

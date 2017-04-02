@@ -132,7 +132,22 @@ When you run the container, it start a NIS node on the testnet.&lt;/p&gt;
 
 &lt;h3 id=&#34;using-the-docker-config&#34;&gt;Using the docker config&lt;/h3&gt;
 
-&lt;p&gt;To build the Docker image, go in the subdirectory and issue the build command:&lt;/p&gt;
+&lt;p&gt;A &lt;code&gt;run.sh&lt;/code&gt; script is available in the &lt;code&gt;/docker&lt;/code&gt; directory.&lt;/p&gt;
+
+&lt;p&gt;Before running it, create a directory where the container will store its persistent data. This is needed to
+avoid a full blockchain download at every update of the image.&lt;/p&gt;
+
+&lt;p&gt;Then simply execute the script:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;docker/run.sh
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;It will prompt you for the path directory which will host persistent data, then builds and run the container.
+It drops you in a bash shell inside the container.&lt;/p&gt;
+
+&lt;h3 id=&#34;manually-building-the-docker-image&#34;&gt;Manually building the docker image&lt;/h3&gt;
+
+&lt;p&gt;If you want to do it yourself, here it is. To build the Docker image, go in the &lt;code&gt;docker&lt;/code&gt;subdirectory and issue the build command:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;cd docker/
 docker build -t nemdev .
@@ -171,11 +186,11 @@ which you rebase. Explaining this is out of scope of this guide though.&lt;/p&gt
 
 &lt;h2 id=&#34;using-the-docker-container&#34;&gt;Using the docker container&lt;/h2&gt;
 
-&lt;p&gt;We have already seen &lt;a href=&#34;https://rb2nem.github.io/nem-dev-guide/02-about/#docker-config&#34;&gt;how to build the docker image&lt;/a&gt; accompanying this guide. Let&amp;rsquo;s now us it!&lt;/p&gt;
+&lt;p&gt;We have already seen &lt;a href=&#34;https://rb2nem.github.io/nem-dev-guide/02-about/#docker-config&#34;&gt;how to run the docker container&lt;/a&gt; accompanying this guide. Let&amp;rsquo;s now use it!&lt;/p&gt;
 
 &lt;p&gt;As explained in the description of the docker image, we start it with this command&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;nem:~$ docker run -it --rm -v $persistent_location:/var/lib/nem -p 7890:7890 nemdev bash
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;nem:~$ docker/run.sh
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;This drops you in a bash shell running in the container, where a NIS instance has been started on the testnet. You can validate that NIS
