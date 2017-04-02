@@ -41,7 +41,21 @@ NIS is started by [supervisord](http://www.supervisord.org). The NIS data is sto
 `/var/log/nis-stderr.log` and `/var/log/nis-stdout.log`.
 
 ### Using the docker config
-To build the Docker image, go in the subdirectory and issue the build command:
+
+A `run.sh` script is available in the `/docker` directory.
+
+Before running it, create a directory where the container will store its persistent data. This is needed to 
+avoid a full blockchain download at every update of the image.
+
+Then simply execute the script:
+```
+docker/run.sh
+```
+It will prompt you for the path directory which will host persistent data, then builds and run the container.
+It drops you in a bash shell inside the container.
+
+### Manually building the docker image
+If you want to do it yourself, here it is. To build the Docker image, go in the `docker`subdirectory and issue the build command:
 ```
 cd docker/
 docker build -t nemdev .

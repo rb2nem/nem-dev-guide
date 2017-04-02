@@ -10,11 +10,11 @@ In this chapter we'll start a NIS instance on the testnet, and we'll send it som
 
 ## Using the docker container
 
-We have already seen [how to build the docker image]({{< relref "02-about.md#docker-config" >}}) accompanying this guide. Let's now us it!
+We have already seen [how to run the docker container]({{< relref "02-about.md#docker-config" >}}) accompanying this guide. Let's now use it!
 
 As explained in the description of the docker image, we start it with this command
 ``` bash
-nem:~$ docker run -it --rm -v $persistent_location:/var/lib/nem -p 7890:7890 nemdev bash
+nem:~$ docker/run.sh
 ```
 
 This drops you in a bash shell running in the container, where a NIS instance has been started on the testnet. You can validate that NIS 
