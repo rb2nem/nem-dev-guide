@@ -1,6 +1,6 @@
 +++
 prev = "/02-about"
-next = "/99-references"
+next = "/04-blockchain-requests"
 weight = 30
 title = "Setting up the environment"
 toc = true

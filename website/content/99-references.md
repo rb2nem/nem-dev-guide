@@ -1,6 +1,6 @@
 +++
 #next = "/next/path"
-prev = "/03-setting-up-environment"
+prev = "/04-blockchain-requests"
 weight = 990
 title = "References"
 date = "2017-03-26T15:02:00+02:00"
@@ -8,6 +8,7 @@ toc = true
 
 +++
 
+Here are links that you most certainly will be interested in as a developer.
 
 ### Papers
 * [NEM technical paper](http://blog.nem.io/nem-technical-report/)
@@ -24,3 +25,13 @@ toc = true
 * [nem-api](https://github.com/nikhiljha/nem-api), a javascript API Wrapper for the NIS Layer of the NEM Blockchain Platform.
 * [nem-apps](https://github.com/NEMChina/nem-apps), a java library to initiate, co-sign and monitor transactions
 * [csharp2nem](https://github.com/NemProject/csharp2nem), a C# library
+
+### Testnet
+
+* [Testnet Nodes](http://bob.nem.ninja:8765/#/nodes/)
+* [Testnet Block Explorer](http://bob.nem.ninja:8765/#/blocks/0)
+
+### Mainnet
+
+* [Mainnet Nodes](http://chain.nem.ninja/#/nodes)
+* [Mainnet Block Explorer](http://chain.nem.ninja/#/blocks/0)

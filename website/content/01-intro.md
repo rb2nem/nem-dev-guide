@@ -28,7 +28,7 @@ Nem is providing:
 * Proof of Importance
 * a peers reputation system
 * a one minute average block time
-* delegated harvesting: no need to let your own computer connected to compute blocks and reap fees, you can delegate your importance to 
+* [delegated harvesting](https://blog.nem.io/how-local-and-delegated-harvesting-works/): no need to let your own computer connected to compute blocks and reap fees, you can delegate your importance to 
   a NIS instance of your choice without risk of loosing your funds
 * a currency named XEM, used to pay for fees of operations on the blockchain
 
