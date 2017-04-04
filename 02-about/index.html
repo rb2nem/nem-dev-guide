@@ -236,7 +236,11 @@
 <li>
 <ul>
 <li><a href="#help-improve-the-guide">Help improve the guide</a></li>
-<li><a href="#tools">Tools</a></li>
+<li><a href="#tools">Tools</a>
+<ul>
+<li><a href="#httpie">httpie</a></li>
+<li><a href="#jq">jq</a></li>
+</ul></li>
 <li><a href="#docker-config">Docker config</a>
 <ul>
 <li><a href="#using-the-docker-config">Using the docker config</a></li>
@@ -273,13 +277,15 @@ Help us improve this guide!</p>
 
 <h2 id="tools">Tools</h2>
 
+<h3 id="httpie">httpie</h3>
+
 <p>We will use <a href="https://httpie.org/">httpie</a> to interact with the NEM Information Server. It provides easy specification of
 <a href="https://httpie.org/doc#querystring-parameters">query string parameters</a>, <a href="https://httpie.org/doc#url-shortcuts-for-localhost">URL shortcuts for localhost</a>
  (which will shorten your typing if your NIS is listening on localhost, as it is the case if you use the guide&rsquo;s docker image described below) and
 many other goodies. Check its <a href="https://httpie.org/doc">documentation</a> for more details.</p>
 
 <p>httpie also outputs colored and readable information about the request and its response. Example in this guide will include httpie&rsquo;s output
-when relevant. As an example, here is the output when querying google.com, where oyu can see the first line is the command executed, then comes the request, followed by the response headers and the response body:</p>
+when relevant. As an example, here is the output when querying google.com, where you can see the first line is the command executed, then comes the request, followed by the response headers and the response body:</p>
 
 <pre>
 <div class="httpie">$ http google.com</div>
@@ -309,11 +315,19 @@ when relevant. As an example, here is the output when querying google.com, where
 
 
 
+<p><div class="notices tip" ><p>You can pass POST data on the command line as key-value pairs. For string value, separate key and value with <code>=</code>, for non-string values like integer, use <code>:=</code>.</p>
+</div>
+</p>
+
+<h3 id="jq">jq</h3>
+
+<p><a href="https://stedolan.github.io/jq/">jq</a> is a command line JSON processor. It comes very handy for scripting and quick validations.</p>
+
 <h2 id="docker-config">Docker config</h2>
 
 <p>A docker config has been implemented to accompany this dev guide. It is located in the <a href="https://github.com/rb2nem/nem-dev-guide"><code>docker/</code> subdirectory of this very repository</a>.
 It is a docker image based on Ubuntu 16.04, the latest long term support release available.
-When you run the container, it start a NIS node on the testnet.</p>
+When you run the container, it start a NIS node on the testnet. All software needed in this guide is also installed in the docker container.</p>
 
 <p>NIS is started by <a href="http://www.supervisord.org">supervisord</a>. The NIS data is stored under /var/lib/nem, and the logs are available at
 <code>/var/log/nis-stderr.log</code> and <code>/var/log/nis-stdout.log</code>.</p>
