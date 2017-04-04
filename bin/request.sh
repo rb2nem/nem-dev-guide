@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eux
+set -eu
 output_file=$1
 [[ -f $output_file ]] && echo "$output_file already exists, not overwriting!" && exit 1
 

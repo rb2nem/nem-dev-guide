@@ -21,21 +21,31 @@ Help us improve this guide!
 
 ## Tools
 
+
+### httpie
 We will use [httpie](https://httpie.org/) to interact with the NEM Information Server. It provides easy specification of
 [query string parameters](https://httpie.org/doc#querystring-parameters), [URL shortcuts for localhost](https://httpie.org/doc#url-shortcuts-for-localhost)
  (which will shorten your typing if your NIS is listening on localhost, as it is the case if you use the guide's docker image described below) and
 many other goodies. Check its [documentation](https://httpie.org/doc) for more details.
 
 httpie also outputs colored and readable information about the request and its response. Example in this guide will include httpie's output
-when relevant. As an example, here is the output when querying google.com, where oyu can see the first line is the command executed, then comes the request, followed by the response headers and the response body:
+when relevant. As an example, here is the output when querying google.com, where you can see the first line is the command executed, then comes the request, followed by the response headers and the response body:
 
 {{< httpie "code/about_google.html" >}} 
+
+{{% notice tip %}}
+You can pass POST data on the command line as key-value pairs. For string value, separate key and value with `=`, for non-string values like integer, use `:=`.
+{{% /notice %}}
+
+### jq
+
+[jq](https://stedolan.github.io/jq/) is a command line JSON processor. It comes very handy for scripting and quick validations.
 
 ## Docker config
 
 A docker config has been implemented to accompany this dev guide. It is located in the [`docker/` subdirectory of this very repository](https://github.com/rb2nem/nem-dev-guide).
 It is a docker image based on Ubuntu 16.04, the latest long term support release available.
-When you run the container, it start a NIS node on the testnet.
+When you run the container, it start a NIS node on the testnet. All software needed in this guide is also installed in the docker container.
 
 NIS is started by [supervisord](http://www.supervisord.org). The NIS data is stored under /var/lib/nem, and the logs are available at 
 `/var/log/nis-stderr.log` and `/var/log/nis-stdout.log`.
