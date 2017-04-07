@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="https://rb2nem.github.io/nem-dev-guide/images/favicon.png" type="image/x-icon" />
 
     
-    <title>Introduction</title>
+    <title>Transactions Overview</title>
     <link href="https://rb2nem.github.io/nem-dev-guide//css/nucleus.css" rel="stylesheet">
     <link href="https://rb2nem.github.io/nem-dev-guide//css/font-awesome.min.css" rel="stylesheet">
     <link href="https://rb2nem.github.io/nem-dev-guide//css/hybrid.css" rel="stylesheet">
@@ -26,7 +26,7 @@
 <link rel="stylesheet" type="text/css" href="https://rb2nem.github.io/nem-dev-guide/css/custom.css">
 
   </head>
-  <body class="" data-url="/01-intro/">
+  <body class="" data-url="/05-transaction-overview/">
     <nav id="sidebar">
   <div id="header-wrapper">
     <div id="header">
@@ -140,7 +140,7 @@
           
           
           
-            <li class="dd-item active" data-nav-id="/01-intro/">
+            <li class="dd-item " data-nav-id="/01-intro/">
               <a href="https://rb2nem.github.io/nem-dev-guide/01-intro/">
                 <span>Introduction     </i></span>
               </a>
@@ -172,7 +172,7 @@
           
           
           
-            <li class="dd-item " data-nav-id="/05-transaction-overview/">
+            <li class="dd-item active" data-nav-id="/05-transaction-overview/">
               <a href="https://rb2nem.github.io/nem-dev-guide/05-transaction-overview/">
                 <span>Transactions Overview     </i></span>
               </a>
@@ -221,7 +221,7 @@
                 
                 
               <div id="top-github-link">
-                  <a class="github-link" href="https://github.com/rb2nem/nem-dev-guide/edit/master/website/content/01-intro.md" target="blank">
+                  <a class="github-link" href="https://github.com/rb2nem/nem-dev-guide/edit/master/website/content/05-transaction-overview.md" target="blank">
                     <i class="fa fa-code-fork"></i>
                     Edit this page
                   </a>
@@ -242,21 +242,12 @@
                 
                   
                 
-                <span itemprop="title"> Introduction</span>
+                <span itemprop="title"> Transactions Overview</span>
               </div>
               
                   <div class="progress">
     <div class="wrapper">
-<nav id="TableOfContents">
-<ul>
-<li>
-<ul>
-<li><a href="#nem-presentation">Nem Presentation</a></li>
-<li><a href="#integrating-with-nem">Integrating with Nem</a></li>
-<li><a href="#testing-net">Testing net</a></li>
-</ul></li>
-</ul>
-</nav>
+
     </div>
 </div>
 
@@ -266,55 +257,138 @@
             
     	        <div id="body-inner">
                 
-                <h1>Introduction</h1>
+                <h1>Transactions Overview</h1>
                 
 
+<p>In this chapter we will take a closer look at transactions.
+Transactions can be seen as actions taken on the blockchain, chaging the state of the block chain.
+As different actions can be taken, different transaction types have been define.</p>
 
+<p>Transaction types are grouped by kind. For example all multisig transaction are of the same kind, but
+still have a differrent type according to their effect. Some kinds have multiple transaction types, others
+only have one.</p>
 
-<h2 id="nem-presentation">Nem Presentation</h2>
+<p>Each transaction kind has a base id, from which the id of their transaction types are derived. For example, the transfer kind has base id <code>0x100</code>,
+and a mosaic transfer type has id <code>0x101</code>. If one days it is decided that NEM needs a new transfer type, it would be assigned the id <code>0x102</code>, which
+today is not used.</p>
 
-<p>Nem is a blockchain built from scratch, learning some lessons from Bitcoin.
-If you need an introduction to the blockchain concept, here is a <a href="https://anders.com/blockchain/">good visual introduction</a>,
- which also propose an interactive part.</p>
+<p>Here are the transfer kinds and their respective types, each with their id noted in hexadecimal and decimal notation, as extracted
+<a href="https://github.com/NemProject/nem.core/blob/master/src/main/java/org/nem/core/model/TransactionTypes.java">from the code</a>:</p>
 
-<p>Nem is providing:</p>
+<table>
+<thead>
+<tr>
+<th>Transaction</th>
+<th>Kind</th>
+<th>Type</th>
+<th>ID</th>
+</tr>
+</thead>
 
-<ul>
-<li>editable n-of-m multi-sig: an action in a Nem account is authorized only if n of m key identified as authorised validate it.
-When you create your account, it is a 1-of-1 account, meaning only you need to validate any operation. It is however possible
-to modify the account to add authorised keys, and specify how many of them need to validate an operation. This can be 1-of-2,
-or 2-of-5, and can evolve over time.</li>
-<li>mosaic, an implementation of asset also known as colored coins.</li>
-<li>namespaces.</li>
-<li>a <a href="https://www.nem.io/install.html">client</a> (on the desktop: previously NCC, currently NanoWallet; or mobile) - server (NIS, the next version of it being named Catapult) approach, easing the development of solutions on Nem as your software only has to talk to a NIS instance.</li>
-<li>software backed by a test suite</li>
-<li>Proof of Importance</li>
-<li>a peers reputation system</li>
-<li>a one minute average block time</li>
-<li><a href="https://blog.nem.io/how-local-and-delegated-harvesting-works/">delegated harvesting</a>: no need to let your own computer connected to compute blocks and reap fees, you can delegate your importance to
-a NIS instance of your choice without risk of loosing your funds</li>
-<li>a currency named XEM, used to pay for fees of operations on the blockchain</li>
-</ul>
+<tbody>
+<tr>
+<td>Transfer</td>
+<td>0x100, 256</td>
+<td>Mosaic transfer</td>
+<td>0x101, 257</td>
+</tr>
 
-<p>These can be leveraged to build products and tools, such as <a href="https://blog.nem.io/apostille/">Apostille</a>, a notarisation service; or  <a href="http://landstead.atraurablockchain.com/#!/">Landstead</a>, a land and property registry. The NEM features enable you to rapidly deliver working products</p>
+<tr>
+<td>Importance</td>
+<td>0x800, 2048</td>
+<td>Importance transfer</td>
+<td>0x801, 2049</td>
+</tr>
 
-<h2 id="integrating-with-nem">Integrating with Nem</h2>
+<tr>
+<td>Multisig</td>
+<td>0x1000, 4096</td>
+<td>Multisig change</td>
+<td>0x1001, 4097</td>
+</tr>
 
-<p>At time of writing in April 2017, the Catapult rewrite of NIS is well underway. It is said to provide a mostly compatible REST API with NIS, the
-server currently available. We will thus base this guide on the REST API. That API can be accessed from any language.</p>
+<tr>
+<td></td>
+<td></td>
+<td>Multisig sign</td>
+<td>0x1002, 4098</td>
+</tr>
 
-<h2 id="testing-net">Testing net</h2>
+<tr>
+<td></td>
+<td></td>
+<td>Multisig tx</td>
+<td>0x1004, 4100</td>
+</tr>
 
-<p>Before you run your code on the Nem blockchain, you might want to validate it in a test environment, without having to spend real XEMS
-to pay the fees of your operations. That&rsquo;s the purpose of the test net, a version of the Nem blockchain used for testing not only your
-applications, but also newer versions of the Nem software itself.</p>
+<tr>
+<td>Namespace</td>
+<td>0x2000, 8192</td>
+<td>Provision ns</td>
+<td>0x2001, 8193</td>
+</tr>
 
-<p>If you run a NIS instance yourself, you can configure it with the key <code>nem.network</code>. For you NIS to join the production Nem blockchain,
-set its value to <code>mainnet</code>, and for it to use the test blockchain, set its value to <code>testnet</code>. <code>mainnet</code> and <code>testnet</code>  is also the way we will identify
-in this document the two environments.</p>
+<tr>
+<td>Mosaic</td>
+<td>0x4000, 16384</td>
+<td>Mosaic definition creation</td>
+<td>0x4001, 16385</td>
+</tr>
 
-<p>If you don&rsquo;t run your own NIS instance, but still want to work in the testnet, you can find a list of NIS instance part of the testnet at
-<a href="http://bob.nem.ninja:8765/#/nodes/">http://bob.nem.ninja:8765/#/nodes/</a>.</p>
+<tr>
+<td></td>
+<td></td>
+<td>Mosaic supply change</td>
+<td>0x4002, 16386</td>
+</tr>
+</tbody>
+</table>
+
+<p>Keep this as a reference for when we&rsquo;ll monitor or create transactions.</p>
+
+<p>Just for the completeness, there are gaps in the numbers because some of them have been
+assigned to kinds and types that were never used in the end. Here they are:</p>
+
+<table>
+<thead>
+<tr>
+<th>Transaction</th>
+<th>Kind</th>
+<th>Type</th>
+<th>ID</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><del>Asset</del></td>
+<td>0x200, 512</td>
+<td><del>Asset new</del></td>
+<td>0x201, 513</td>
+</tr>
+
+<tr>
+<td></td>
+<td></td>
+<td><del>Asset ask</del></td>
+<td>0x202, 514</td>
+</tr>
+
+<tr>
+<td></td>
+<td></td>
+<td><del>Asset bid</del></td>
+<td>0x203, 515</td>
+</tr>
+
+<tr>
+<td><del>Snapshot</del></td>
+<td>0x400, 1024</td>
+<td><del>Snapshot</del></td>
+<td>0x241, 1025</td>
+</tr>
+</tbody>
+</table>
 
 
       
@@ -323,8 +397,8 @@ in this document the two environments.</p>
 
     <div id="navigation">
         
-        <a class="nav nav-prev" href="https://rb2nem.github.io/nem-dev-guide//"> <i class="fa fa-chevron-left"></i></a>
-        <a class="nav nav-next" href="https://rb2nem.github.io/nem-dev-guide//02-about" style="margin-right: 0px;"><i class="fa fa-chevron-right"></i></a>
+        <a class="nav nav-prev" href="https://rb2nem.github.io/nem-dev-guide//04-blockchain-requests"> <i class="fa fa-chevron-left"></i></a>
+        <a class="nav nav-next" href="https://rb2nem.github.io/nem-dev-guide/06-transaction-transfer" style="margin-right: 0px;"><i class="fa fa-chevron-right"></i></a>
     </div>
 
     </section>

@@ -542,6 +542,200 @@ The first 10 characters, ie &lt;code&gt;FE4E545903&lt;/code&gt;, indicate that i
     </item>
     
     <item>
+      <title>Transactions Overview</title>
+      <link>https://rb2nem.github.io/nem-dev-guide/05-transaction-overview/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://rb2nem.github.io/nem-dev-guide/05-transaction-overview/</guid>
+      <description>&lt;p&gt;In this chapter we will take a closer look at transactions.
+Transactions can be seen as actions taken on the blockchain, chaging the state of the block chain.
+As different actions can be taken, different transaction types have been define.&lt;/p&gt;
+
+&lt;p&gt;Transaction types are grouped by kind. For example all multisig transaction are of the same kind, but
+still have a differrent type according to their effect. Some kinds have multiple transaction types, others
+only have one.&lt;/p&gt;
+
+&lt;p&gt;Each transaction kind has a base id, from which the id of their transaction types are derived. For example, the transfer kind has base id &lt;code&gt;0x100&lt;/code&gt;,
+and a mosaic transfer type has id &lt;code&gt;0x101&lt;/code&gt;. If one days it is decided that NEM needs a new transfer type, it would be assigned the id &lt;code&gt;0x102&lt;/code&gt;, which
+today is not used.&lt;/p&gt;
+
+&lt;p&gt;Here are the transfer kinds and their respective types, each with their id noted in hexadecimal and decimal notation, as extracted
+&lt;a href=&#34;https://github.com/NemProject/nem.core/blob/master/src/main/java/org/nem/core/model/TransactionTypes.java&#34;&gt;from the code&lt;/a&gt;:&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Transaction&lt;/th&gt;
+&lt;th&gt;Kind&lt;/th&gt;
+&lt;th&gt;Type&lt;/th&gt;
+&lt;th&gt;ID&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Transfer&lt;/td&gt;
+&lt;td&gt;0x100, 256&lt;/td&gt;
+&lt;td&gt;Mosaic transfer&lt;/td&gt;
+&lt;td&gt;0x101, 257&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Importance&lt;/td&gt;
+&lt;td&gt;0x800, 2048&lt;/td&gt;
+&lt;td&gt;Importance transfer&lt;/td&gt;
+&lt;td&gt;0x801, 2049&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Multisig&lt;/td&gt;
+&lt;td&gt;0x1000, 4096&lt;/td&gt;
+&lt;td&gt;Multisig change&lt;/td&gt;
+&lt;td&gt;0x1001, 4097&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;Multisig sign&lt;/td&gt;
+&lt;td&gt;0x1002, 4098&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;Multisig tx&lt;/td&gt;
+&lt;td&gt;0x1004, 4100&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Namespace&lt;/td&gt;
+&lt;td&gt;0x2000, 8192&lt;/td&gt;
+&lt;td&gt;Provision ns&lt;/td&gt;
+&lt;td&gt;0x2001, 8193&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;Mosaic&lt;/td&gt;
+&lt;td&gt;0x4000, 16384&lt;/td&gt;
+&lt;td&gt;Mosaic definition creation&lt;/td&gt;
+&lt;td&gt;0x4001, 16385&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;Mosaic supply change&lt;/td&gt;
+&lt;td&gt;0x4002, 16386&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Keep this as a reference for when we&amp;rsquo;ll monitor or create transactions.&lt;/p&gt;
+
+&lt;p&gt;Just for the completeness, there are gaps in the numbers because some of them have been
+assigned to kinds and types that were never used in the end. Here they are:&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Transaction&lt;/th&gt;
+&lt;th&gt;Kind&lt;/th&gt;
+&lt;th&gt;Type&lt;/th&gt;
+&lt;th&gt;ID&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;del&gt;Asset&lt;/del&gt;&lt;/td&gt;
+&lt;td&gt;0x200, 512&lt;/td&gt;
+&lt;td&gt;&lt;del&gt;Asset new&lt;/del&gt;&lt;/td&gt;
+&lt;td&gt;0x201, 513&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;del&gt;Asset ask&lt;/del&gt;&lt;/td&gt;
+&lt;td&gt;0x202, 514&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;del&gt;Asset bid&lt;/del&gt;&lt;/td&gt;
+&lt;td&gt;0x203, 515&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;&lt;del&gt;Snapshot&lt;/del&gt;&lt;/td&gt;
+&lt;td&gt;0x400, 1024&lt;/td&gt;
+&lt;td&gt;&lt;del&gt;Snapshot&lt;/del&gt;&lt;/td&gt;
+&lt;td&gt;0x241, 1025&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Transfer Transactions</title>
+      <link>https://rb2nem.github.io/nem-dev-guide/06-transaction-transfer/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://rb2nem.github.io/nem-dev-guide/06-transaction-transfer/</guid>
+      <description>&lt;p&gt;This chapter will cover transfer transactions, arguably one of the most command transactions on the NEM blockchain.&lt;/p&gt;
+
+&lt;p&gt;As a reminder, the type of these transactions is &lt;code&gt;0x101&lt;/code&gt;, or &lt;code&gt;257&lt;/code&gt;.
+Let&amp;rsquo;s take a closer look at a transaction we have already seen in the &lt;a href=&#34;https://rb2nem.github.io/nem-dev-guide/04-blockchain-requests#getting-a-transaction-by-its-hash-transaction-get&#34;&gt;blockchain requests&lt;/a&gt; section, when we validated an &lt;a href=&#34;https://blog.nem.io/apostille/&#34;&gt;Apostile&lt;/a&gt; signature.&lt;/p&gt;
+
+&lt;p&gt;Here is the data returned when we request a transaction by its hash, with each field explained:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;{
+    &amp;quot;meta&amp;quot;: {
+        &amp;quot;hash&amp;quot;: {
+            //the transaction&#39;s hash
+            &amp;quot;data&amp;quot;: &amp;quot;06c19b8c53838fdaefb4a04126bc78e0c3ab90db48d8dba43f2063bb02139d69&amp;quot;
+        }, 
+        // height of the block where this transaction is stored
+        &amp;quot;height&amp;quot;: 1002581, 
+        // id of the transaction
+        &amp;quot;id&amp;quot;: 667140, 
+        &amp;quot;innerHash&amp;quot;: {}
+    }, 
+    &amp;quot;transaction&amp;quot;: {
+        // amount transferred, in microXEMs (a millionth of 1 XEM)
+        &amp;quot;amount&amp;quot;: 0, 
+        // deadline before which this transaction has to be confirmed
+        &amp;quot;deadline&amp;quot;: 60727263, 
+        // fee, in microXEMs
+        &amp;quot;fee&amp;quot;: 18000000, 
+        // the message attached to the transaction
+	// type 1 is plain, 2 is secure (encrypted)
+        &amp;quot;message&amp;quot;: {
+            &amp;quot;payload&amp;quot;: &amp;quot;fe4e54590318b3ce5de42067de2af1da69bb082b6c05a425198f407a392cba3bdae5c3b686&amp;quot;, 
+            &amp;quot;type&amp;quot;: 1
+        }, 
+        // recipient account of the transaction
+        &amp;quot;recipient&amp;quot;: &amp;quot;NCZSJHLTIMESERVBVKOW6US64YDZG2PFGQCSV23J&amp;quot;, 
+        // signature of the transaction, absent if multisig
+        &amp;quot;signature&amp;quot;: &amp;quot;bc7676f2ba4cb1d88110956b6b21dcf2356b2f86e47c44359a88a74d3d12e6a918fa5a920aff94af7d0984f644a51e18aa2a24bc1890cabad2f3fd2c9f79340e&amp;quot;, 
+        // public key of the account who created the account
+        &amp;quot;signer&amp;quot;: &amp;quot;826cedee421ff66e708858c17815fcd831a4bb68e3d8956299334e9e24380ba8&amp;quot;, 
+        // number of seconds elapsed since the creation of the nemesis block
+        &amp;quot;timeStamp&amp;quot;: 60723663, 
+        // transaction type
+        &amp;quot;type&amp;quot;: 257, 
+        // version of the data structure used
+        &amp;quot;version&amp;quot;: 1744830465
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
       <title>References</title>
       <link>https://rb2nem.github.io/nem-dev-guide/99-references/</link>
       <pubDate>Sun, 26 Mar 2017 15:02:00 +0200</pubDate>
