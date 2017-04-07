@@ -7,10 +7,10 @@ toc = true
 +++
 In this chapter we will take a closer look at transactions.
 Transactions can be seen as actions taken on the blockchain, chaging the state of the block chain.
-As different actions can be taken, different transaction types have been define.
+As different actions can be taken, different transaction types have been defined.
 
-Transaction types are grouped by kind. For example all multisig transaction are of the same kind, but
-still have a differrent type according to their effect. Some kinds have multiple transaction types, others
+Transaction types are grouped by kind. For example all multisig transactions are of the same kind, but
+still have a different type according to their effect. Some kinds have multiple transaction types, others
 only have one.
 
 Each transaction kind has a base id, from which the id of their transaction types are derived. For example, the transfer kind has base id `0x100`,
