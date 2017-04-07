@@ -44,10 +44,10 @@ Here is an example query:
 
 ## Getting a transaction by its hash (/transaction/get)
 
-It is also possible got get a transaction by its hash. This is useful if you want to validate a Apostile hash.
+It is also possible to get a transaction by its hash. This is useful if you want to validate a Apostille hash.
 So let's do exactly that!
 
-Without looking at the details just yet, we will see how we can validate the NIS archive we download from [http://bob.nem.ninja/](http://bob.nem.ninja/).
+Without looking at the details just yet, we will see how we can validate the NIS archive we downloaded from [http://bob.nem.ninja/](http://bob.nem.ninja/).
 At the time of writing, `nis-ncc-0.6.84.tgz` is available, together with its signature file `nis-ncc-0.6.84.tgz.sig` which has the content
 ```
 Signatures are now published using apostille.
@@ -59,7 +59,7 @@ We see the `txId` which is the hash of the transaction we will need to get. Let'
 
 We see that the transaction we have downloaded is well from the block as advertised in the `.sig` file. 
 The interesting part is the payload of the transaction, which is `fe4e54590318b3ce5de42067de2af1da69bb082b6c05a425198f407a392cba3bdae5c3b686`.
-The first 10 characters, ie `FE4E545903`, indicate that it is a non-signed file hash using SHA-256 (all details are in the [Apostile Whitepaper](https://www.nem.io/ApostilleWhitePaper.pdf). Dropping this prefix leaves us with the SHA-256 of the file `nis-ncc-0.6.84.tgz`, `18b3ce5de42067de2af1da69bb082b6c05a425198f407a392cba3bdae5c3b686`.
+The first 10 characters, ie `FE4E545903`, indicate that it is a non-signed file hash using SHA-256 (all details are in the [Apostille Whitepaper](https://www.nem.io/ApostilleWhitePaper.pdf). Dropping this prefix leaves us with the SHA-256 of the file `nis-ncc-0.6.84.tgz`, `18b3ce5de42067de2af1da69bb082b6c05a425198f407a392cba3bdae5c3b686`.
 
 If you want to automate this in your scripts, here's how you can extract an Apostile file hash with the help of jq:
 ```
