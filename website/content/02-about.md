@@ -23,7 +23,7 @@ Help us improve this guide!
 
 
 ### httpie
-We will use [httpie](https://httpie.org/) to interact with the NEM Information Server. It provides easy specification of
+We will use [httpie](https://httpie.org/) to interact with the NEM Infrastructure Server. It provides easy specification of
 [query string parameters](https://httpie.org/doc#querystring-parameters), [URL shortcuts for localhost](https://httpie.org/doc#url-shortcuts-for-localhost)
  (which will shorten your typing if your NIS is listening on localhost, as it is the case if you use the guide's docker image described below) and
 many other goodies. Check its [documentation](https://httpie.org/doc) for more details.
