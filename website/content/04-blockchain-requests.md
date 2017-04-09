@@ -1,5 +1,5 @@
 +++
-prev = "/03-setting-up-environment"
+prev = "/03b-accounts"
 next = "05-transaction-overview"
 weight = 40
 title = "Blockchain requests"

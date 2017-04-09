@@ -21,7 +21,7 @@ Here is the data returned when we request a transaction by its hash, with each f
         }, 
         // height of the block where this transaction is stored
         "height": 1002581, 
-        // id of the transaction
+        // id of the transaction, this is node dependent (different nodes may return different ids for the same transaction)
         "id": 667140, 
         "innerHash": {}
     }, 
