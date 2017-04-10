@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="https://rb2nem.github.io/nem-dev-guide/images/favicon.png" type="image/x-icon" />
 
     
-    <title>NEM&#39;s Developer Guide</title>
+    <title>NEM Accounts</title>
     <link href="https://rb2nem.github.io/nem-dev-guide//css/nucleus.css" rel="stylesheet">
     <link href="https://rb2nem.github.io/nem-dev-guide//css/font-awesome.min.css" rel="stylesheet">
     <link href="https://rb2nem.github.io/nem-dev-guide//css/hybrid.css" rel="stylesheet">
@@ -26,7 +26,7 @@
 <link rel="stylesheet" type="text/css" href="https://rb2nem.github.io/nem-dev-guide/css/custom.css">
 
   </head>
-  <body class="" data-url="/">
+  <body class="" data-url="/03b-accounts/">
     <nav id="sidebar">
   <div id="header-wrapper">
     <div id="header">
@@ -124,7 +124,7 @@
       
       
 
-      <li class="dd-item active parent" data-nav-id="/">
+      <li class="dd-item  parent" data-nav-id="/">
         <a href="https://rb2nem.github.io/nem-dev-guide/">
           <span>
             
@@ -164,7 +164,7 @@
           
           
           
-            <li class="dd-item " data-nav-id="/03b-accounts/">
+            <li class="dd-item active" data-nav-id="/03b-accounts/">
               <a href="https://rb2nem.github.io/nem-dev-guide/03b-accounts/">
                 <span>NEM Accounts     </i></span>
               </a>
@@ -229,7 +229,7 @@
                 
                 
               <div id="top-github-link">
-                  <a class="github-link" href="https://github.com/rb2nem/nem-dev-guide/edit/master/website/content/index.md" target="blank">
+                  <a class="github-link" href="https://github.com/rb2nem/nem-dev-guide/edit/master/website/content/03b-accounts.md" target="blank">
                     <i class="fa fa-code-fork"></i>
                     Edit this page
                   </a>
@@ -243,39 +243,130 @@
                       </a>
                   </span>
                 
+                <span id="toc-menu"><a href=""><i class="fa fa-list-alt"></i></a></span>
+                
                 
                 
                 
                   
                 
-                <span itemprop="title"> NEM&#39;s Developer Guide</span>
+                <span itemprop="title"> NEM Accounts</span>
               </div>
+              
+                  <div class="progress">
+    <div class="wrapper">
+<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#generating-a-key-pair">Generating a key-pair</a></li>
+</ul></li>
+</ul>
+</nav>
+    </div>
+</div>
+
               
 
             </div>
             
-              <div id="chapter">
-            
     	        <div id="body-inner">
+                
+                <h1>NEM Accounts</h1>
                 
 
 
 
-<h3 id="nem-s-developer-guide">NEM&rsquo;s Developer guide</h3>
+<p>As explained in Chapter 2 of the <a href="http://nem.io/NEM_techRef.pdf">Technical
+Reference</a>, an account is an Ed25519
+cryptographic keypair associated to a mutable state stored on the NEM
+blockchain. The state of the account is modified when transactions involving it
+are accepted by the network.</p>
 
-<p>Get all information you need to develop on NEM&rsquo;s technology.</p>
+<p>Nem is using the <a href="https://ed25519.cr.yp.to/">Ed25519 publick key signature system</a> with the
+SHA3 hashing algorithm.
+Ed25519 was <a href="https://ed25519.cr.yp.to/ed25519-20110926.pdf">introduced</a> when sha3 was not yet
+standardised, and it uses the SHA512 hashing algorithm (the paper names it Ed25519-SHA-512).
+However the paper clearly states that <code>we will not hesitate to recommend Ed25519-SHA-3 after SHA-3 is standardized</code>.
+<div class="notices note" ><p>Most Ed25519 implementations use the SHA-512 method described in the original paper. To generate NEM keypairs,
+you might need to patch standard implementations, as was <a href="https://github.com/NemProject/nem-py/blob/master/ed25519.py">done for the python implementation</a>
+ by the NEM authors..</p>
+</div>
+</p>
+
+<p>The private key uniquely identifies a NEM account. The public key is derived from the private key, and the address of the account is
+derived from the public key.</p>
+
+<p>The address of an account is a base-32 encoded triplet consisting of:
+* network byte: is it an address on the testnet or the mainnet?
+* 160-bit hash of the public key
+* 4 byte checksum, for detection of mistyped addresses</p>
+
+<p>From this description we see that we can generate a new account offline, there&rsquo;s
+no need to be connected to the network to create an account.</p>
+
+<p>Here is the code generating an address from the public key, <a href="https://github.com/NemProject/nem.core/blob/master/src/main/java/org/nem/core/model/Address.java#L81">extracted from nem.code</a>:</p>
+
+<pre><code class="language-java">        private static String generateEncoded(final byte version, final byte[] publicKey) {
+                // step 1: sha3 hash of the public key
+                final byte[] sha3PublicKeyHash = Hashes.sha3_256(publicKey);
+
+                // step 2: ripemd160 hash of (1)
+                final byte[] ripemd160StepOneHash = Hashes.ripemd160(sha3PublicKeyHash);
+
+                // step 3: add version byte in front of (2)
+                final byte[] versionPrefixedRipemd160Hash = ArrayUtils.concat(new byte[] { version }, ripemd160StepOneHash);
+
+                // step 4: get the checksum of (3)
+                final byte[] stepThreeChecksum = generateChecksum(versionPrefixedRipemd160Hash);
+
+                // step 5: concatenate (3) and (4)
+                final byte[] concatStepThreeAndStepSix = ArrayUtils.concat(versionPrefixedRipemd160Hash, stepThreeChecksum);
+
+                // step 6: base32 encode (5)
+                return Base32Encoder.getString(concatStepThreeAndStepSix);
+        }
+
+</code></pre>
+
+<p>We see that the steps are:</p>
+
+<ol>
+<li>take the sha3-256 of the public key</li>
+<li>take the <a href="https://en.wikipedia.org/wiki/RIPEMD">ripemd160</a> hash of that result.</li>
+<li>add the prefix corresponding to the network (&lsquo;N&rsquo; for Mainnet, &rsquo;T&rsquo; for Testnet, &rsquo;M&rsquo; for Mijin)</li>
+<li>compute the checksum by taking the 4 left-most bytes of the sha3-256 of the previous step</li>
+<li>append the checksum to the result of step 3</li>
+</ol>
+
+<h2 id="generating-a-key-pair">Generating a key-pair</h2>
+
+<p>The easiest way to generate a key-pair is currently the [nem-sdk](), which is a javascript implementation
+usable in the browser and on nodejs. All this is setup in the docker container accompanying this guide.
+Here is how you generate a key-pair:</p>
+
+<pre><code class="language-javascript">//import the nem-sdk
+var nem = require(&quot;nem-sdk&quot;).default;
+// generate 32 random bytes. 
+// You could write the 32 bytes of your choice if you prefer, but that might be dangerous as
+// it would be less random.
+// 
+var rBytes = nem.crypto.nacl.randomBytes(32);
+// convert the random bytes to an hex string
+var rHex = nem.utils.convert.ua2hex(rBytes);
+// generate the keypair
+var keyPair = nem.crypto.keyPair.create(rHex);
+</code></pre>
 
 
-      
-        </div> 
       
       </div>
     </div>
 
     <div id="navigation">
         
-        
-        <a class="nav nav-next" href="https://rb2nem.github.io/nem-dev-guide//01-intro" style="margin-right: 0px;"><i class="fa fa-chevron-right"></i></a>
+        <a class="nav nav-prev" href="https://rb2nem.github.io/nem-dev-guide//03-setting-up-environment"> <i class="fa fa-chevron-left"></i></a>
+        <a class="nav nav-next" href="https://rb2nem.github.io/nem-dev-guide/04-blockchain-requests" style="margin-right: 0px;"><i class="fa fa-chevron-right"></i></a>
     </div>
 
     </section>

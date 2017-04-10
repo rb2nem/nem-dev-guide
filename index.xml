@@ -87,7 +87,7 @@ Help us improve this guide!&lt;/p&gt;
 
 &lt;h3 id=&#34;httpie&#34;&gt;httpie&lt;/h3&gt;
 
-&lt;p&gt;We will use &lt;a href=&#34;https://httpie.org/&#34;&gt;httpie&lt;/a&gt; to interact with the NEM Information Server. It provides easy specification of
+&lt;p&gt;We will use &lt;a href=&#34;https://httpie.org/&#34;&gt;httpie&lt;/a&gt; to interact with the NEM Infrastructure Server. It provides easy specification of
 &lt;a href=&#34;https://httpie.org/doc#querystring-parameters&#34;&gt;query string parameters&lt;/a&gt;, &lt;a href=&#34;https://httpie.org/doc#url-shortcuts-for-localhost&#34;&gt;URL shortcuts for localhost&lt;/a&gt;
  (which will shorten your typing if your NIS is listening on localhost, as it is the case if you use the guide&amp;rsquo;s docker image described below) and
 many other goodies. Check its &lt;a href=&#34;https://httpie.org/doc&#34;&gt;documentation&lt;/a&gt; for more details.&lt;/p&gt;
@@ -285,6 +285,97 @@ We get code 5, meaning the node is booted. Other possible &lt;a href=&#34;http:/
     </item>
     
     <item>
+      <title>NEM Accounts</title>
+      <link>https://rb2nem.github.io/nem-dev-guide/03b-accounts/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://rb2nem.github.io/nem-dev-guide/03b-accounts/</guid>
+      <description>
+
+&lt;p&gt;As explained in Chapter 2 of the &lt;a href=&#34;http://nem.io/NEM_techRef.pdf&#34;&gt;Technical
+Reference&lt;/a&gt;, an account is an Ed25519
+cryptographic keypair associated to a mutable state stored on the NEM
+blockchain. The state of the account is modified when transactions involving it
+are accepted by the network.&lt;/p&gt;
+
+&lt;p&gt;Nem is using the &lt;a href=&#34;https://ed25519.cr.yp.to/&#34;&gt;Ed25519 publick key signature system&lt;/a&gt; with the
+SHA3 hashing algorithm.
+Ed25519 was &lt;a href=&#34;https://ed25519.cr.yp.to/ed25519-20110926.pdf&#34;&gt;introduced&lt;/a&gt; when sha3 was not yet
+standardised, and it uses the SHA512 hashing algorithm (the paper names it Ed25519-SHA-512).
+However the paper clearly states that &lt;code&gt;we will not hesitate to recommend Ed25519-SHA-3 after SHA-3 is standardized&lt;/code&gt;.
+&lt;div class=&#34;notices note&#34; &gt;&lt;p&gt;Most Ed25519 implementations use the SHA-512 method described in the original paper. To generate NEM keypairs,
+you might need to patch standard implementations, as was &lt;a href=&#34;https://github.com/NemProject/nem-py/blob/master/ed25519.py&#34;&gt;done for the python implementation&lt;/a&gt;
+ by the NEM authors..&lt;/p&gt;
+&lt;/div&gt;
+&lt;/p&gt;
+
+&lt;p&gt;The private key uniquely identifies a NEM account. The public key is derived from the private key, and the address of the account is
+derived from the public key.&lt;/p&gt;
+
+&lt;p&gt;The address of an account is a base-32 encoded triplet consisting of:
+* network byte: is it an address on the testnet or the mainnet?
+* 160-bit hash of the public key
+* 4 byte checksum, for detection of mistyped addresses&lt;/p&gt;
+
+&lt;p&gt;From this description we see that we can generate a new account offline, there&amp;rsquo;s
+no need to be connected to the network to create an account.&lt;/p&gt;
+
+&lt;p&gt;Here is the code generating an address from the public key, &lt;a href=&#34;https://github.com/NemProject/nem.core/blob/master/src/main/java/org/nem/core/model/Address.java#L81&#34;&gt;extracted from nem.code&lt;/a&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-java&#34;&gt;        private static String generateEncoded(final byte version, final byte[] publicKey) {
+                // step 1: sha3 hash of the public key
+                final byte[] sha3PublicKeyHash = Hashes.sha3_256(publicKey);
+
+                // step 2: ripemd160 hash of (1)
+                final byte[] ripemd160StepOneHash = Hashes.ripemd160(sha3PublicKeyHash);
+
+                // step 3: add version byte in front of (2)
+                final byte[] versionPrefixedRipemd160Hash = ArrayUtils.concat(new byte[] { version }, ripemd160StepOneHash);
+
+                // step 4: get the checksum of (3)
+                final byte[] stepThreeChecksum = generateChecksum(versionPrefixedRipemd160Hash);
+
+                // step 5: concatenate (3) and (4)
+                final byte[] concatStepThreeAndStepSix = ArrayUtils.concat(versionPrefixedRipemd160Hash, stepThreeChecksum);
+
+                // step 6: base32 encode (5)
+                return Base32Encoder.getString(concatStepThreeAndStepSix);
+        }
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We see that the steps are:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;take the sha3-256 of the public key&lt;/li&gt;
+&lt;li&gt;take the &lt;a href=&#34;https://en.wikipedia.org/wiki/RIPEMD&#34;&gt;ripemd160&lt;/a&gt; hash of that result.&lt;/li&gt;
+&lt;li&gt;add the prefix corresponding to the network (&amp;lsquo;N&amp;rsquo; for Mainnet, &amp;rsquo;T&amp;rsquo; for Testnet, &amp;rsquo;M&amp;rsquo; for Mijin)&lt;/li&gt;
+&lt;li&gt;compute the checksum by taking the 4 left-most bytes of the sha3-256 of the previous step&lt;/li&gt;
+&lt;li&gt;append the checksum to the result of step 3&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;generating-a-key-pair&#34;&gt;Generating a key-pair&lt;/h2&gt;
+
+&lt;p&gt;The easiest way to generate a key-pair is currently the [nem-sdk](), which is a javascript implementation
+usable in the browser and on nodejs. All this is setup in the docker container accompanying this guide.
+Here is how you generate a key-pair:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;//import the nem-sdk
+var nem = require(&amp;quot;nem-sdk&amp;quot;).default;
+// generate 32 random bytes. 
+// You could write the 32 bytes of your choice if you prefer, but that might be dangerous as
+// it would be less random.
+// 
+var rBytes = nem.crypto.nacl.randomBytes(32);
+// convert the random bytes to an hex string
+var rHex = nem.utils.convert.ua2hex(rBytes);
+// generate the keypair
+var keyPair = nem.crypto.keyPair.create(rHex);
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Blockchain requests</title>
       <link>https://rb2nem.github.io/nem-dev-guide/04-blockchain-requests/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -470,10 +561,10 @@ We can repeat this query on the mainnet, using &lt;a href=&#34;http://chain.nem.
 
 &lt;h2 id=&#34;getting-a-transaction-by-its-hash-transaction-get&#34;&gt;Getting a transaction by its hash (/transaction/get)&lt;/h2&gt;
 
-&lt;p&gt;It is also possible got get a transaction by its hash. This is useful if you want to validate a Apostile hash.
+&lt;p&gt;It is also possible to get a transaction by its hash. This is useful if you want to validate a Apostille hash.
 So let&amp;rsquo;s do exactly that!&lt;/p&gt;
 
-&lt;p&gt;Without looking at the details just yet, we will see how we can validate the NIS archive we download from &lt;a href=&#34;http://bob.nem.ninja/&#34;&gt;http://bob.nem.ninja/&lt;/a&gt;.
+&lt;p&gt;Without looking at the details just yet, we will see how we can validate the NIS archive we downloaded from &lt;a href=&#34;http://bob.nem.ninja/&#34;&gt;http://bob.nem.ninja/&lt;/a&gt;.
 At the time of writing, &lt;code&gt;nis-ncc-0.6.84.tgz&lt;/code&gt; is available, together with its signature file &lt;code&gt;nis-ncc-0.6.84.tgz.sig&lt;/code&gt; which has the content&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;Signatures are now published using apostille.
@@ -532,7 +623,7 @@ block: 1002581
 
 &lt;p&gt;We see that the transaction we have downloaded is well from the block as advertised in the &lt;code&gt;.sig&lt;/code&gt; file.
 The interesting part is the payload of the transaction, which is &lt;code&gt;fe4e54590318b3ce5de42067de2af1da69bb082b6c05a425198f407a392cba3bdae5c3b686&lt;/code&gt;.
-The first 10 characters, ie &lt;code&gt;FE4E545903&lt;/code&gt;, indicate that it is a non-signed file hash using SHA-256 (all details are in the &lt;a href=&#34;https://www.nem.io/ApostilleWhitePaper.pdf&#34;&gt;Apostile Whitepaper&lt;/a&gt;. Dropping this prefix leaves us with the SHA-256 of the file &lt;code&gt;nis-ncc-0.6.84.tgz&lt;/code&gt;, &lt;code&gt;18b3ce5de42067de2af1da69bb082b6c05a425198f407a392cba3bdae5c3b686&lt;/code&gt;.&lt;/p&gt;
+The first 10 characters, ie &lt;code&gt;FE4E545903&lt;/code&gt;, indicate that it is a non-signed file hash using SHA-256 (all details are in the &lt;a href=&#34;https://www.nem.io/ApostilleWhitePaper.pdf&#34;&gt;Apostille Whitepaper&lt;/a&gt;. Dropping this prefix leaves us with the SHA-256 of the file &lt;code&gt;nis-ncc-0.6.84.tgz&lt;/code&gt;, &lt;code&gt;18b3ce5de42067de2af1da69bb082b6c05a425198f407a392cba3bdae5c3b686&lt;/code&gt;.&lt;/p&gt;
 
 &lt;p&gt;If you want to automate this in your scripts, here&amp;rsquo;s how you can extract an Apostile file hash with the help of jq:&lt;/p&gt;
 
@@ -548,10 +639,33 @@ The first 10 characters, ie &lt;code&gt;FE4E545903&lt;/code&gt;, indicate that i
       
       <guid>https://rb2nem.github.io/nem-dev-guide/05-transaction-overview/</guid>
       <description>&lt;p&gt;In this chapter we will take a closer look at transactions.
-Transactions can be seen as actions taken on the blockchain, chaging the state of the block chain.
-As different actions can be taken, different transaction types have been define.&lt;/p&gt;
+Transactions can be seen as actions taken on the blockchain, chaging the state of the block chain.&lt;/p&gt;
 
-&lt;p&gt;Transaction types are grouped by kind. For example all multisig transaction are of the same kind, but
+&lt;p&gt;From the NEM API documentation:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-text&#34;&gt;Once a transaction is initiated, it is still unconfirmed and thus not yet
+accepted by the network. At this point it is not yet clear if it will get
+included in a block. Never rely on a transaction which has the state
+&#39;unconfirmed&#39;. Once it is included in a block, the transaction gets processed
+and, in case of a transfer transaction, the amount stated in the transaction
+gets transferred from the sender&#39;s account to the recipient&#39;s account.
+Additionally the transaction fee is deducted from the sender&#39;s account. The
+transaction is said to have 0 confirmations at this point. When another block
+is added to the block chain the transaction has 1 confirmation. The next block
+added to the chain will give it 2 confirmations and so on.
+
+Crypto currencies have the ability to roll back part the block chain. This is
+essential for being able to resolve forks of the block chain. There is however
+a maximum number of blocks that can be rolled back, this is called the rewrite
+limit. Hence forks can only be resolved up to a certain depth too. NEM has a
+rewrite limit of 360 blocks. Once a transaction has more than 360
+confirmations, it cannot be reversed. In real life, forks that are deeper than
+20 blocks do not happen, unless there was some severe problem with the block
+chain due to a bug in the code or an attack of some kind.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;As different actions can be taken, different transaction types have been define.
+Transaction types are grouped by kind. For example all multisig transaction are of the same kind, but
 still have a differrent type according to their effect. Some kinds have multiple transaction types, others
 only have one.&lt;/p&gt;
 
@@ -700,7 +814,7 @@ Let&amp;rsquo;s take a closer look at a transaction we have already seen in the 
         }, 
         // height of the block where this transaction is stored
         &amp;quot;height&amp;quot;: 1002581, 
-        // id of the transaction
+        // id of the transaction, this is node dependent (different nodes may return different ids for the same transaction)
         &amp;quot;id&amp;quot;: 667140, 
         &amp;quot;innerHash&amp;quot;: {}
     }, 
