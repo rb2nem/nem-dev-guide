@@ -2,7 +2,7 @@
 
 # script to run the dev guide's docker image.
 # creates a settings.sh file where the path of directory holding the persistent data
-# 
+# accepts --no-nis as first argument to not start nis in the container
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 
@@ -26,4 +26,4 @@ fi
 docker build -t nemdev .
 
 # run container
-docker run -it --rm -v $persistent_location:/var/lib/nem -p 7890:7890 nemdev bash
+docker run -it --rm -v $persistent_location:/var/lib/nem -p 7890:7890 nemdev "$@"
