@@ -85,6 +85,8 @@ Help us improve this guide!&lt;/p&gt;
 
 &lt;h2 id=&#34;tools&#34;&gt;Tools&lt;/h2&gt;
 
+&lt;p&gt;Here are the tools we will use in this guide. They are all integrated in the Docker image accompanying this guide.&lt;/p&gt;
+
 &lt;h3 id=&#34;httpie&#34;&gt;httpie&lt;/h3&gt;
 
 &lt;p&gt;We will use &lt;a href=&#34;https://httpie.org/&#34;&gt;httpie&lt;/a&gt; to interact with the NEM Infrastructure Server. It provides easy specification of
@@ -126,6 +128,10 @@ when relevant. As an example, here is the output when querying google.com, where
 &lt;p&gt;&lt;div class=&#34;notices tip&#34; &gt;&lt;p&gt;You can pass POST data on the command line as key-value pairs. For string value, separate key and value with &lt;code&gt;=&lt;/code&gt;, for non-string values like integer, use &lt;code&gt;:=&lt;/code&gt;.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/p&gt;
+
+&lt;h3 id=&#34;nodejs-and-nem-sdk&#34;&gt;nodejs and nem-sdk&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/QuantumMechanics/NEM-sdk&#34;&gt;nem-sdk&lt;/a&gt; is a javascript Nem library.&lt;/p&gt;
 
 &lt;h3 id=&#34;jq&#34;&gt;jq&lt;/h3&gt;
 
@@ -245,6 +251,11 @@ to this:&lt;/p&gt;
 
 &lt;p&gt;We see here that our NIS instance is communicating with other instances (&lt;code&gt;synchronizing with Node [Hi, I am MedAlice2...&lt;/code&gt;), downloading blocks (&lt;code&gt;received 400 blocks&lt;/code&gt;), validating downloaded blocks (&lt;code&gt;validated 400 blocks&lt;/code&gt;), updating the blockchain with validated blocks (&lt;code&gt;chain update of 400 blocks&lt;/code&gt;), etc&lt;/p&gt;
 
+&lt;div class=&#34;notices note&#34; &gt;&lt;p&gt;Should you wish to enter the container without starting NIS, you can do that by passing &lt;code&gt;--no-nis&lt;/code&gt; as first argument to the run command.
+For example, &lt;code&gt;docker/run.sh --no-nis bash&lt;/code&gt; will drop you in a shell in the container, but without starting NIS.&lt;/p&gt;
+&lt;/div&gt;
+
+
 &lt;h2 id=&#34;first-request&#34;&gt;First request&lt;/h2&gt;
 
 &lt;p&gt;As our NIS instance is up and running, we can send our first request to it. We&amp;rsquo;ll use &lt;a href=&#34;https://httpie.org/&#34;&gt;httpie&lt;/a&gt;, which is already installed in the docker image.
@@ -361,6 +372,7 @@ usable in the browser and on nodejs. All this is setup in the docker container a
 Here is how you generate a key-pair:&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;//import the nem-sdk
+// This is not needed if you use the repl.js script available in the container
 var nem = require(&amp;quot;nem-sdk&amp;quot;).default;
 // generate 32 random bytes. 
 // You could write the 32 bytes of your choice if you prefer, but that might be dangerous as
@@ -368,9 +380,18 @@ var nem = require(&amp;quot;nem-sdk&amp;quot;).default;
 // 
 var rBytes = nem.crypto.nacl.randomBytes(32);
 // convert the random bytes to an hex string
+// the result, rHex, can be printed out to the console for taking a backup.
+// Take a backup copy of that value as it lets you recreate the keypair to give
+// you access to your account.
 var rHex = nem.utils.convert.ua2hex(rBytes);
 // generate the keypair
 var keyPair = nem.crypto.keyPair.create(rHex);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The public key can be printed out easily with:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;keyPair.publicKey.toString()
+&#39;c8f1b78863f612797480db8ba809ee589ff3dc524c1d9b57b9d50051fc2d2af9&#39;
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>

@@ -331,6 +331,11 @@ to this:</p>
 
 <p>We see here that our NIS instance is communicating with other instances (<code>synchronizing with Node [Hi, I am MedAlice2...</code>), downloading blocks (<code>received 400 blocks</code>), validating downloaded blocks (<code>validated 400 blocks</code>), updating the blockchain with validated blocks (<code>chain update of 400 blocks</code>), etc</p>
 
+<div class="notices note" ><p>Should you wish to enter the container without starting NIS, you can do that by passing <code>--no-nis</code> as first argument to the run command.
+For example, <code>docker/run.sh --no-nis bash</code> will drop you in a shell in the container, but without starting NIS.</p>
+</div>
+
+
 <h2 id="first-request">First request</h2>
 
 <p>As our NIS instance is up and running, we can send our first request to it. We&rsquo;ll use <a href="https://httpie.org/">httpie</a>, which is already installed in the docker image.
