@@ -21,6 +21,7 @@ Help us improve this guide!
 
 ## Tools
 
+Here are the tools we will use in this guide. They are all integrated in the Docker image accompanying this guide.
 
 ### httpie
 We will use [httpie](https://httpie.org/) to interact with the NEM Infrastructure Server. It provides easy specification of
@@ -36,6 +37,11 @@ when relevant. As an example, here is the output when querying google.com, where
 {{% notice tip %}}
 You can pass POST data on the command line as key-value pairs. For string value, separate key and value with `=`, for non-string values like integer, use `:=`.
 {{% /notice %}}
+
+### nodejs and nem-sdk
+
+[nem-sdk](https://github.com/QuantumMechanics/NEM-sdk) is a javascript Nem library.
+
 
 ### jq
 
