@@ -74,6 +74,7 @@ usable in the browser and on nodejs. All this is setup in the docker container a
 Here is how you generate a key-pair:
 ``` javascript
 //import the nem-sdk
+// This is not needed if you use the repl.js script available in the container
 var nem = require("nem-sdk").default;
 // generate 32 random bytes. 
 // You could write the 32 bytes of your choice if you prefer, but that might be dangerous as
@@ -81,8 +82,16 @@ var nem = require("nem-sdk").default;
 // 
 var rBytes = nem.crypto.nacl.randomBytes(32);
 // convert the random bytes to an hex string
+// the result, rHex, can be printed out to the console for taking a backup.
+// Take a backup copy of that value as it lets you recreate the keypair to give
+// you access to your account.
 var rHex = nem.utils.convert.ua2hex(rBytes);
 // generate the keypair
 var keyPair = nem.crypto.keyPair.create(rHex);
 ```
 
+The public key can be printed out easily with:
+``` javascript
+keyPair.publicKey.toString()
+'c8f1b78863f612797480db8ba809ee589ff3dc524c1d9b57b9d50051fc2d2af9'
+```
