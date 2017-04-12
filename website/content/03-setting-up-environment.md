@@ -59,6 +59,12 @@ root@adc93b7773f6:/# tail /var/log/nis-stderr.log  -f
 ```
 We see here that our NIS instance is communicating with other instances (`synchronizing with Node [Hi, I am MedAlice2...`), downloading blocks (`received 400 blocks`), validating downloaded blocks (`validated 400 blocks`), updating the blockchain with validated blocks (`chain update of 400 blocks`), etc
 
+{{% notice note  %}}
+Should you wish to enter the container without starting NIS, you can do that by passing `--no-nis` as first argument to the run command.
+For example, `docker/run.sh --no-nis bash` will drop you in a shell in the container, but without starting NIS.
+{{% /notice  %}}
+
+
 ## First request
 
 As our NIS instance is up and running, we can send our first request to it. We'll use [httpie](https://httpie.org/), which is already installed in the docker image.
