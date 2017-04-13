@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker/run.sh repl.js
+docker/run.sh "$1" repl.js
