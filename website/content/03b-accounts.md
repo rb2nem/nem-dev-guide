@@ -6,6 +6,8 @@ title = "NEM Accounts"
 toc = true
 +++
 
+## Private key, public key, address
+
 As explained in Chapter 2 of the [Technical
 Reference](http://nem.io/NEM_techRef.pdf), an account is an Ed25519
 cryptographic keypair associated to a mutable state stored on the NEM
@@ -67,10 +69,41 @@ We see that the steps are:
   1. compute the checksum by taking the 4 left-most bytes of the sha3-256 of the previous step
   1. append the checksum to the result of step 3
 
+## Accounts on the blockchain
+
+From the explanation above, we see that we can create an account without ever interacting the with blockchain.
+Does it mean that all possible accounts are pre-defined on the blockchain? No. It means that only accounts that 
+have had activity are tracked on the blockchain. Creating your account is done by defining your private key. With 
+that private key you have the information needed to access the related account. Be before it had any activity,
+it isn't tracked on the blockchain and the amount it stores is 0.
+
+So what is an activity? It is simply a transaction involving the account. That can be an incoming transaction (the
+first transaction obviously can't be an outgoing transaction) or a multi-sig conversion transaction.
+
+## Key length and security
+
+The private key is 256 bits long, which might seem small when you hear advices to [use 2048 bits keys for RSA](http://stackoverflow.com/a/1904541).
+But [key length is not the only parameter defining your security](https://security.stackexchange.com/a/101045). Nem
+uses Ed25519, which is an [elliptic curve cryptography](https://en.wikipedia.org/wiki/Elliptic_curve_cryptography),
+requiring smaller key than non elliptic curve cryptography methods to provide the same security level.
+It appears that in general, to break an n bit elliptic curve public key, the effort is 2^(n/2), or about 3.4*10^38, basic operations.
+
+The probability to randomly generate a secret key that is linked to an account already existing is also very small.
+The key being 256 bits long, there are 10^77 possibilities. We thus see that collision probability is very small, and in 
+cryptographic term, negligible.
+
+What's more, you can increase the security of your account by using multi-sig, with which multiple accounts have to validate
+transactions from one account.
+
+
 ## Generating a key-pair
 
-The easiest way to generate a key-pair is currently the [nem-sdk](), which is a javascript implementation 
+The easiest way to generate a key-pair is currently the [nem-sdk](https://github.com/QuantumMechanics/NEM-sdk), which is a javascript implementation 
 usable in the browser and on nodejs. All this is setup in the docker container accompanying this guide.
+
+The first step is to generate a random private key.
+When printed as an hexadecimal value, it can be used to create an account with the NanoWallet.
+ 
 Here is how you generate a key-pair:
 ``` javascript
 //import the nem-sdk
@@ -82,9 +115,10 @@ var nem = require("nem-sdk").default;
 // 
 var rBytes = nem.crypto.nacl.randomBytes(32);
 // convert the random bytes to an hex string
-// the result, rHex, can be printed out to the console for taking a backup.
+// the result, rHex, can be printed out to the console for taking a backup with console.log(rBytes).
 // Take a backup copy of that value as it lets you recreate the keypair to give
 // you access to your account.
+// This value is also usable with the NEM NanoWallet.
 var rHex = nem.utils.convert.ua2hex(rBytes);
 // generate the keypair
 var keyPair = nem.crypto.keyPair.create(rHex);
@@ -93,5 +127,23 @@ var keyPair = nem.crypto.keyPair.create(rHex);
 The public key can be printed out easily with:
 ``` javascript
 keyPair.publicKey.toString()
-'c8f1b78863f612797480db8ba809ee589ff3dc524c1d9b57b9d50051fc2d2af9'
+'4fe5efd97360bc8a32ec105d419222eeb714e6d06fd8b895a5eedda2b0edf931'
+```
+
+
+## Generating the address from the public key
+
+As described above, the address has a prefix for each network supported
+(mainnet, testnet, mijin), so the nem-sdk helpers to generate an address take
+as argument the public key and the network id for which to generate the
+address.
+
+The network ids are stored under `nem.model.network.data.testnet.id`,
+`nem.model.network.data.mainnet.id`, `nem.model.network.data.mijin.id`.
+
+With this info, we can generate the address:
+
+``` javascript
+nem.model.address.toAddress(keyPair.publicKey.toString(),  nem.model.network.data.testnet.id)
+'TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G'
 ```
