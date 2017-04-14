@@ -1,5 +1,5 @@
 +++
-prev = "/04-blockchain-requests"
+prev = "/04b-account-requests"
 next = "06-transaction-transfer"
 weight = 50
 title = "Transactions Overview"

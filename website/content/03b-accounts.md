@@ -69,6 +69,16 @@ We see that the steps are:
   1. compute the checksum by taking the 4 left-most bytes of the sha3-256 of the previous step
   1. append the checksum to the result of step 3
 
+## Multisig accounts
+
+Nem account can be converted to multisig account (from multi signatures). A multisig account has co-signatories accounts, 
+and it cannot initiate transactions itself. Only the co-signatories can initiate transactions.
+
+When an account is converted to multisig, the transaction adds the co-signatories and indicates how many of them need to
+accept a transaction for it to go through. That's why you'll hear that NEM supports N-of-M multisig accounts. A multisig account
+can have M co-signatories, of which N need to validate the transactions. As long as N is smaller or equal to M, it is a
+supported configuration. You can have a 1-of-2, 3-of-4, 7-of-20, etc...
+
 ## Accounts on the blockchain
 
 From the explanation above, we see that we can create an account without ever interacting the with blockchain.
@@ -94,6 +104,22 @@ cryptographic term, negligible.
 
 What's more, you can increase the security of your account by using multi-sig, with which multiple accounts have to validate
 transactions from one account.
+
+## Account data
+
+The blockchain stores the following data about accounts:
+
+* address: the account address
+* balance: the amount of micro-XEMs stored in the account.
+* importance: denotes the probability of an account to generate the next block in case the account has harvesting turned on.
+* public key: the public key of the account can be used to validate signatures of the account
+* label: unused, always null
+* harvestedBlocks: the number of blocks this account has generated.
+
+## The public key of the account is not empty, why?
+
+The public key of an account will be stored on the blockchain with the first transaction issued the account. An account which hasn't issued any
+transaction will have its public key field empty.
 
 
 ## Generating a key-pair
