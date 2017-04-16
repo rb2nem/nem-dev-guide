@@ -180,6 +180,14 @@
           
           
           
+            <li class="dd-item " data-nav-id="/04b-account-requests/">
+              <a href="https://rb2nem.github.io/nem-dev-guide/04b-account-requests/">
+                <span>Account requests     </i></span>
+              </a>
+            </li>
+          
+          
+          
             <li class="dd-item " data-nav-id="/05-transaction-overview/">
               <a href="https://rb2nem.github.io/nem-dev-guide/05-transaction-overview/">
                 <span>Transactions Overview     </i></span>
@@ -260,8 +268,11 @@
 <li>
 <ul>
 <li><a href="#private-key-public-key-address">Private key, public key, address</a></li>
+<li><a href="#multisig-accounts">Multisig accounts</a></li>
 <li><a href="#accounts-on-the-blockchain">Accounts on the blockchain</a></li>
 <li><a href="#key-length-and-security">Key length and security</a></li>
+<li><a href="#account-data">Account data</a></li>
+<li><a href="#the-public-key-of-the-account-is-not-empty-why">The public key of the account is not empty, why?</a></li>
 <li><a href="#generating-a-key-pair">Generating a key-pair</a></li>
 <li><a href="#generating-the-address-from-the-public-key">Generating the address from the public key</a></li>
 </ul></li>
@@ -345,6 +356,16 @@ no need to be connected to the network to create an account.</p>
 <li>append the checksum to the result of step 3</li>
 </ol>
 
+<h2 id="multisig-accounts">Multisig accounts</h2>
+
+<p>Nem account can be converted to multisig account (from multi signatures). A multisig account has co-signatories accounts,
+and it cannot initiate transactions itself. Only the co-signatories can initiate transactions.</p>
+
+<p>When an account is converted to multisig, the transaction adds the co-signatories and indicates how many of them need to
+accept a transaction for it to go through. That&rsquo;s why you&rsquo;ll hear that NEM supports N-of-M multisig accounts. A multisig account
+can have M co-signatories, of which N need to validate the transactions. As long as N is smaller or equal to M, it is a
+supported configuration. You can have a 1-of-2, 3-of-4, 7-of-20, etc&hellip;</p>
+
 <h2 id="accounts-on-the-blockchain">Accounts on the blockchain</h2>
 
 <p>From the explanation above, we see that we can create an account without ever interacting the with blockchain.
@@ -370,6 +391,24 @@ cryptographic term, negligible.</p>
 
 <p>What&rsquo;s more, you can increase the security of your account by using multi-sig, with which multiple accounts have to validate
 transactions from one account.</p>
+
+<h2 id="account-data">Account data</h2>
+
+<p>The blockchain stores the following data about accounts:</p>
+
+<ul>
+<li>address: the account address</li>
+<li>balance: the amount of micro-XEMs stored in the account.</li>
+<li>importance: denotes the probability of an account to generate the next block in case the account has harvesting turned on.</li>
+<li>public key: the public key of the account can be used to validate signatures of the account</li>
+<li>label: unused, always null</li>
+<li>harvestedBlocks: the number of blocks this account has generated.</li>
+</ul>
+
+<h2 id="the-public-key-of-the-account-is-not-empty-why">The public key of the account is not empty, why?</h2>
+
+<p>The public key of an account will be stored on the blockchain with the first transaction issued the account. An account which hasn&rsquo;t issued any
+transaction will have its public key field empty.</p>
 
 <h2 id="generating-a-key-pair">Generating a key-pair</h2>
 
