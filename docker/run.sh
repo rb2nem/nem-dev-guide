@@ -76,4 +76,3 @@ EOF
 if [[ -n "$@" ]]; then
   docker exec -it $mitm_container "$@"
 fi
-end
