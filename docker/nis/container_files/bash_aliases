@@ -1,0 +1,1 @@
+alias mitm="LANG=en_US.UTF-8 mitmproxy -R http://localhost:7890 -p 7892"

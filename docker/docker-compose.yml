@@ -1,0 +1,13 @@
+version: '2'
+services:
+  nemdevnis:
+    build: "nis"
+    volumes:
+     - ${persistent_location}:/var/lib/nem
+  nemdevmitm:
+    build: "mitm"
+    ports:
+     - "8081:8081"
+     - "8082:8082"
+     - "7778:7778"
+     - "7890:7890"
