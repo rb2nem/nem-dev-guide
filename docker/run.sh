@@ -31,8 +31,8 @@ else
 fi
 
 containers=$(docker ps --format '{{.Names}}')
-nis_container=$(echo $containers | grep nis)
-mitm_container=$(echo $containers | grep mitm)
+nis_container=$(echo "$containers" | grep nis)
+mitm_container=$(echo "$containers" | grep mitm)
 
 # start docker containers if needed, possibly with nis
 if [[ -z "$nis_container" ]] ; then 
@@ -45,32 +45,35 @@ cat <<EOF
 
 ###############################################################################
 Welcome to the NEM developer's guide Docker containers.
-Two containers have been started, one running NIS, and one running
-mitmproxy.
+Two containers have been started, one running NIS ($nis_container), and the
+other ($mitm_container) running mitmproxy.
+
+Only the mitmproxy container has ports mapped to your host:
+- 7890 : to contact the NIS instance running in the nis container through mitmproxy
+- 7778 : to contact the NIS instance' websocket port through mitmproxy
+- 8081 : to view requests to NIS intercepted by mitmproxy
+- 8082 : to view websocket requests to NIS intercepted by mitmproxy
 
 Here are custom commands that are recognised. You can start launch them with 
 the run.sh helper, with docker run, or from the shell in the container.
 
-- repl.js : open the node repl in the nis container, with nem-sdk loaded under the nem object.
-- mitm    : execute mitmproxy. This lets you inspect requests you send to it.
-            It listens on your hosts's localhost interface on port 7890 and proxies your
-            request to NIS
+- repl.js : open the node repl in the mitm container, with nem-sdk loaded under 
+            the nem object.
+- mitm    : execute mitmproxy. This lets you inspect requests you send to it in a 
+            ncurse. interface.
+            It listens on your hosts's localhost interface on port 7890 and 
+            proxies your request to NIS
 
-You can also pass options to the docker entrypoint:
+You can also pass options:
 
 --no-nis : do not start nis
 
-The container also has a mitmweb interface available on port 8081.
-
-Ports to which you can send your REST queries (on the host or in the container):
-
-- 7890 : contact you local NIS directly
-- 7891 : send the request to mitmweb, which will pass it to your local NIS.
-         Inspect requests at http://localhost:8081
-- 7892 : send the request to mitmproxy, which will pass it to you local NIS.
-         You must first have started mitmproxy by accessing its terminal interface
-         by running 'run.sh mitm'
 
 ###############################################################################
 
 EOF
+
+if [[ -n "$@" ]]; then
+  docker exec -it $mitm_container "$@"
+fi
+end

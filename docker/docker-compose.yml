@@ -1,11 +1,13 @@
 version: '2'
 services:
   nemdevnis:
-    build: "nis"
+#    build: "nis"
+    image: "rb2nem/nem-dev-guide:nis"
     volumes:
      - ${persistent_location}:/var/lib/nem
   nemdevmitm:
-    build: "mitm"
+#    build: "mitm"
+    image: "rb2nem/nem-dev-guide:mitm"
     ports:
      - "8081:8081"
      - "8082:8082"
