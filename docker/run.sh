@@ -37,7 +37,7 @@ mitm_container=$(echo "$containers" | grep mitm)
 # start docker containers if needed, possibly with nis
 if [[ -z "$nis_container" ]] ; then 
   docker-compose up -d
-  [[ $with_nis -eq 1 ]] && docker exec -it docker_nemdevnis_1 supervisorctl start nis ;
+  [[ $with_nis -eq 1 ]] && sleep 1 && docker exec -it docker_nemdevnis_1 supervisorctl start nis ;
 fi
 
 cat <<EOF
