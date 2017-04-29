@@ -36,6 +36,11 @@
   </url>
   
   <url>
+    <loc>https://rb2nem.github.io/nem-dev-guide/90-snippets/</loc>
+    <lastmod>2017-04-29T15:02:00+02:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://rb2nem.github.io/nem-dev-guide/99-references/</loc>
     <lastmod>2017-03-26T15:02:00+02:00</lastmod>
   </url>
@@ -46,8 +51,18 @@
   </url>
   
   <url>
+    <loc>https://rb2nem.github.io/nem-dev-guide/categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://rb2nem.github.io/nem-dev-guide/</loc>
     <lastmod>2017-03-26T15:02:00+02:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://rb2nem.github.io/nem-dev-guide/tags/</loc>
     <priority>0</priority>
   </url>
   
