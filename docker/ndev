@@ -77,8 +77,13 @@ handle_args() {
             # an unrecognised option is interpreted as the end of options
 	    # and sets the remaining value as the command to be run
             *)
-            cmd="$@"
-	    return 0
+	    if [[ $key=~"-.*" ]]; then
+                 echo "Unrecognised option, please run \"$0 --help\""
+                 exit 1
+            else
+                cmd="$@"
+	        return 0
+            fi
             ;;
         esac
     done
