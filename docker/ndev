@@ -1,0 +1,181 @@
+#!/bin/bash
+
+# script to run the dev guide's docker image.
+# creates a settings.sh file where the path of directory holding the persistent data
+# accepts --no-nis as first argument to not start nis in the container
+
+
+################################################################################
+# preamble: functions definitions, variable setting, etc
+################################################################################
+
+# we look for the config file in the same directory as the script, whose location
+# is stored in this variable
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
+
+usage() {
+    cat <<-EOF
+	Usage: $0 [options] [command]
+	
+	The command can be run without flags or commands. In that case it will:
+	    * if missing, create $script_dir/settings.sh, prompting the user for values
+	    * if missing, download the docker-compose.yml to $script_dir
+	    * start the containers
+	The user running $0 needs to have the right to start and stop docker containers.
+
+	Options are:
+	    -c name
+	    --container name
+	       apply command to container. name can be nis or mitm
+	    -n
+	    --no-nis
+	       do not start NIS in the container.
+	    -s
+	    --shutdown
+	       shutdown containers. This flag has the highest priotity and
+	       will be handled befor all others
+	    -S
+	    --status
+		   display running containers before handling other flags 
+
+	Command is a command available in the container. 
+	Custom commands are also available:
+	    repl.js : opens a nodejs repl with nem-sdk loaded and available under the variable 'nem'
+	    mitm    : opens a mitmproxy console in your terminal, listening on port 7892
+
+	EOF
+    exit
+}
+# function to handle arguments passed to the script
+handle_args() {
+
+    while [[ $# -gt 0 ]]; do
+        key="$1"
+
+        case $key in
+            -c|--container)
+            container="$2"
+            shift # passed argument
+            shift
+            ;;
+            -n|--no-nis)
+            with_nis=0
+            shift # no argument
+            ;;
+	    -h|--help)
+	    usage
+	    shift
+	    ;;
+	    -s|--shutdown)
+	    shutdown=1
+	    shift
+	    ;;
+	    -S|--status)
+	    state=1
+	    shift
+	    ;;
+            # an unrecognised option is interpreted as the end of options
+	    # and sets the remaining value as the command to be run
+            *)
+            cmd="$@"
+	    return 0
+            ;;
+        esac
+    done
+}
+
+
+handle_config_file() {
+    # we store the persistent data location for ease
+    if [[ ! -f $script_dir/settings.sh ]]; then 
+      echo "It appears no saved settings have been detected. We will create one now, please answer the questions below"
+      while [[ ! -d "$persistent_location" ]] ; do
+        [[ -z $persistent_location ]] || echo "Directory not found: $persistent_location"
+        echo "In which *existing* directory should the persistent data of the container be stored? (it should exist, no directory will be created)"
+        read persistent_location
+      done
+      echo "#if you change this, change also mitp/.env!" >> settings.sh
+      echo "export persistent_location=\"$persistent_location\"" >> settings.sh
+    fi
+    . $script_dir/settings.sh
+
+}
+
+# makes sure we have consistent data with cmd
+handle_command() {
+	case $1 in
+	  repl.js)
+	    container="mitm"
+	    ;;
+	  bash)
+	    [[ -z $container ]] && container="mitm"
+	    ;;
+	esac  
+
+}
+
+check_running_containers() {
+    containers=$(docker ps --format '{{.Names}}' | grep $(basename $script_dir)_nemdev)
+    nis_container=$(echo "$containers" | grep nis)
+    mitm_container=$(echo "$containers" | grep mitm)
+}
+
+
+check_compose_file() {
+    cd $script_dir
+    [[ -f docker-compose.yml ]] || { curl -q https://raw.githubusercontent.com/rb2nem/nem-dev-guide/master/docker/docker-compose.yml > docker-compose.yml ; echo "The required docker-compose.yml file has been downloaded and saved under $script_dir" ; }
+}
+
+start_containers() {
+# start docker containers if needed, possibly with nis
+    if [[ -z "$nis_container" ]] ; then 
+      docker-compose up -d
+      [[ $with_nis -eq 1 ]] && sleep 1 && docker exec -it docker_nemdevnis_1 supervisorctl start nis ;
+      cat <<-EOF
+	
+	
+	###############################################################################
+	Welcome to the NEM developer's guide Docker containers.
+	Two containers have been started, one running NIS ($nis_container), and the
+	other ($mitm_container) running mitmproxy.
+	
+	Only the mitmproxy container has ports mapped to your host:
+	- 7890 : to contact the NIS instance running in the nis container through mitmproxy
+	- 7778 : to contact the NIS instance' websocket port through mitmproxy
+	- 8081 : to view requests to NIS intercepted by mitmproxy
+	- 8082 : to view websocket requests to NIS intercepted by mitmproxy
+	
+	Run with --help to get an overview of flags and supported commands.
+
+	###############################################################################
+	
+	EOF
+    fi
+}
+
+# go to script directory to have Dockerfile available
+cd $script_dir
+handle_args "$@"
+handle_config_file
+check_compose_file
+check_running_containers
+
+
+if [[ $state -eq 1 ]] ; then
+    echo "running containers are:"
+    echo "$containers"
+    exit
+fi
+
+if [[ $shutdown -eq 1 ]] ; then
+    docker-compose down
+    exit
+fi
+# make args consistent with command
+handle_command $cmd
+
+start_containers
+check_running_containers
+if [[ -n "$cmd" ]]; then
+  docker exec -it $(eval "echo \$${container}_container") "$cmd"
+fi
