@@ -281,12 +281,11 @@
 <li><a href="#httpie">httpie</a></li>
 <li><a href="#nodejs-and-nem-sdk">nodejs and nem-sdk</a></li>
 <li><a href="#jq">jq</a></li>
+<li><a href="#mitmproxy">mitmproxy</a></li>
 </ul></li>
 <li><a href="#docker-config">Docker config</a>
 <ul>
 <li><a href="#using-the-docker-config">Using the docker config</a></li>
-<li><a href="#manually-building-the-docker-image">Manually building the docker image</a></li>
-<li><a href="#customising-the-docker-config">Customising the docker config</a></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -370,56 +369,67 @@ when relevant. As an example, here is the output when querying google.com, where
 
 <p><a href="https://stedolan.github.io/jq/">jq</a> is a command line JSON processor. It comes very handy for scripting and quick validations.</p>
 
+<h3 id="mitmproxy">mitmproxy</h3>
+
+<p><a href="https://mitmproxy.org/">mitmproxy</a> is a intercept and inspect traffic flows. <a href="http://docs.mitmproxy.org/en/stable/mitmweb.html">mitmweb</a> provides a web interface providing easy access to information required in debugging sessions.</p>
+
 <h2 id="docker-config">Docker config</h2>
 
-<p>A docker config has been implemented to accompany this dev guide. It is located in the <a href="https://github.com/rb2nem/nem-dev-guide"><code>docker/</code> subdirectory of this very repository</a>.
-It is a docker image based on Ubuntu 16.04, the latest long term support release available.
-When you run the container, it start a NIS node on the testnet. All software needed in this guide is also installed in the docker container.</p>
+<p>Two containers are accompanying this developer guide, one running only NIS on the testnet, the other proposing all other tools like mitm and nem-sdk.
+As both containers are meant to always run together, a <a href="https://github.com/rb2nem/nem-dev-guide/blob/master/docker/docker-compose.yml">docker-compose configuration file</a> is available.
+Both images are based on Ubuntu.</p>
 
-<p>NIS is started by <a href="http://www.supervisord.org">supervisord</a>. The NIS data is stored under /var/lib/nem, and the logs are available at
+<p>In the NIS container, NIS is started by <a href="http://www.supervisord.org">supervisord</a>. The NIS data is stored under /var/lib/nem, and the logs are available at
 <code>/var/log/nis-stderr.log</code> and <code>/var/log/nis-stdout.log</code>.</p>
 
 <h3 id="using-the-docker-config">Using the docker config</h3>
 
-<p>A <code>run.sh</code> script is available in the <code>/docker</code> directory.</p>
+<p>A helper script <code>ndev</code> <a href="https://github.com/rb2nem/nem-dev-guide/blob/master/docker/ndev">is available</a>. This section will give an overview on its usage.</p>
 
-<p>Before running it, create a directory where the container will store its persistent data. This is needed to
+<p>Start by downloading the script in a working directory, for example <code>nem-dev</code>, and make it executable:</p>
+
+<pre><code>mkdir nem-dev
+cd nem-dev
+curl -q https://raw.githubusercontent.com/rb2nem/nem-dev-guide/master/docker/ndev &gt; ndev
+chmod +x ndev
+</code></pre>
+
+<p>Running the script with <code>--help</code> will give you an overview of all its options. We&rsquo;ll take a look at the most used options.</p>
+
+<p>Before running the script, create a directory where the container will store its persistent data. This is needed to
 avoid a full blockchain download at every update of the image.</p>
 
-<p>Then simply execute the script:</p>
+<p>The first time you run the script, it will:</p>
 
-<pre><code>docker/run.sh
+<ul>
+<li>check if its settings.sh file exists, and create it if needed. The user is prompted for values to be provided.</li>
+<li>check if the required docker-compose.yml file is present, and download it <a href="https://github.com/rb2nem/nem-dev-guide/blob/master/docker/docker-compose.yml">from github</a> if needed</li>
+<li>Download docker <a href="https://hub.docker.com/r/rb2nem/nem-dev-guide/">images from the DockerHub</a></li>
+</ul>
+
+<p>If you run the script without any argument, it will start the containers in background.</p>
+
+<p>To check that the containers are running, you use <code>./ndev --status</code>.
+You can also run a command in the containers, by passing the command as argument to <code>ndev</code>. By default, commands are executed
+in the tools container, where mitm is running.
+Open a shell in the tools container: <code>ndev bash</code>.
+You can select the container in which to run the command with the option <code>-c</code> or <code>--container</code>. To open a shell in the NIS container,
+simply run <code>ndev -c nis bash</code>.</p>
+
+<p>Processes in the containers are managed with <a href="http://supervisord.org/">supervisord</a>. You can manually control NIS. For example, to stop
+nis, simply issue <code>ndev -c nis supervisorctl start nis</code>. To get an overview of the processes running in a container, user the command
+<code>supervisorctl status</code>, for example:</p>
+
+<pre><code>$ ./ndev -c nis supervisorctl status
+nis                              RUNNING   pid 109, uptime 0:01:03
 </code></pre>
 
-<p>It will prompt you for the path directory which will host persistent data, then builds and run the container.
-It drops you in a bash shell inside the container.</p>
+<p>Only the tools container has ports mapped to the host. Port 7890 is mapped to the mitmweb process, which then sends the requests to
+the NIS process running in the other container. This makes it possible to inspect requests, as mitmweb exposes a web interface on
+port 8081 of the host, accessible at <a href="http://127.0.0.1:8081">http://127.0.0.1:8081</a>. If you get a blank page with Google Chrome, try with
+<a href="http://www.getfirefox.com">Firefox</a>.</p>
 
-<h3 id="manually-building-the-docker-image">Manually building the docker image</h3>
-
-<p>If you want to do it yourself, here it is. To build the Docker image, go in the <code>docker</code>subdirectory and issue the build command:</p>
-
-<pre><code>cd docker/
-docker build -t nemdev .
-</code></pre>
-
-<p>You can now run a container based on the image. The best and advised solution is to create a directory on your host in which the
-data of NIS will be persistently stored. That way you can create a new container without having to redownload the whole NEM blockchain
-(eg in case of upgrades of NIS). In our example we will store the data in <code>/data/nis-data</code>, but you can choose another location as long
-as you pass it as an absolute path (ie the path must start with <code>/</code>).</p>
-
-<pre><code>persistent_location=&quot;/data/nis-data&quot;
-[[ -d $persistent_location ]] || mkdir $persistent_location
-docker run -it --rm -v $persistent_location:/var/lib/nem -p 7890:7890 nemdev bash
-</code></pre>
-
-<p>This will drop you in a shell from which you can replicate the commands in this dev guide. The NIS is listening on localhost port 7890.
-If you want to make NIS available from your host, you just have to pass this additional flags: <code>-p 7890:7890</code>.</p>
-
-<h3 id="customising-the-docker-config">Customising the docker config</h3>
-
-<p>You can of course customise the docker image built. Just remember that the Dockerfile of this guide might also evolve. If you want to
-follow the changes of it, you might have to merge your changes. Strategies to do that might be to use <code>git stash</code> or a dedicated git branch
-which you rebase. Explaining this is out of scope of this guide though.</p>
+<p>You stop the containers with <code>ndev --shutdown</code>.</p>
 
 
       

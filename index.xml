@@ -39,9 +39,10 @@ Help improve the guide Every page of this guide is editable by everyone in the w
       
       <guid>https://rb2nem.github.io/nem-dev-guide/03-setting-up-environment/</guid>
       <description>In this chapter we&amp;rsquo;ll start a NIS instance on the testnet, and we&amp;rsquo;ll send it some requests. Let&amp;rsquo;s start!
-Using the docker container We have already seen how to run the docker container accompanying this guide. Let&amp;rsquo;s now use it!
-As explained in the description of the docker image, we start it with this command
-nem:~$ docker/run.sh  This drops you in a bash shell running in the container, where a NIS instance has been started on the testnet.</description>
+Using the docker container We have already seen how to run the docker containers accompanying this guide. Let&amp;rsquo;s now use them!
+As explained in the description of the docker image, we can start it with this command
+nem:~$ ndev  We enter the container running NIS with
+nem:~$ ndev -c nis bash  This drops you in a bash shell running in the container, where a NIS instance has been started on the testnet.</description>
     </item>
     
     <item>
