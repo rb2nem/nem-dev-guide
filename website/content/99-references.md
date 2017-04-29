@@ -26,6 +26,11 @@ Here are links that you most certainly will be interested in as a developer.
 * [nem-api](https://github.com/nikhiljha/nem-api), a javascript API Wrapper for the NIS Layer of the NEM Blockchain Platform.
 * [nem-apps](https://github.com/NEMChina/nem-apps), a java library to initiate, co-sign and monitor transactions
 * [csharp2nem](https://github.com/NemProject/csharp2nem), a C# library
+* [nis-ruby](https://github.com/44uk/nis-ruby), a ruby client library for the NEM Infrastructure Server AP
+* [NanoSnippets](https://github.com/AtrauraBlockchain/NEM-NanoSnippets/wiki) 
+
+### Tools
+* [Harvesting calculator](http://samesake.com/xem/harvesting-calculator/)
 
 ### Testnet
 
