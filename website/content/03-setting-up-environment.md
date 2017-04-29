@@ -10,11 +10,17 @@ In this chapter we'll start a NIS instance on the testnet, and we'll send it som
 
 ## Using the docker container
 
-We have already seen [how to run the docker container]({{< relref "02-about.md#docker-config" >}}) accompanying this guide. Let's now use it!
+We have already seen [how to run the docker containers]({{< relref "02-about.md#docker-config" >}}) accompanying this guide. Let's now use them!
 
-As explained in the description of the docker image, we start it with this command
+As explained in the description of the docker image, we can start it with this command
 ``` bash
-nem:~$ docker/run.sh
+nem:~$ ndev
+```
+
+We enter the container running NIS with
+
+``` bash
+nem:~$ ndev -c nis bash
 ```
 
 This drops you in a bash shell running in the container, where a NIS instance has been started on the testnet. You can validate that NIS 
@@ -60,14 +66,16 @@ root@adc93b7773f6:/# tail /var/log/nis-stderr.log  -f
 We see here that our NIS instance is communicating with other instances (`synchronizing with Node [Hi, I am MedAlice2...`), downloading blocks (`received 400 blocks`), validating downloaded blocks (`validated 400 blocks`), updating the blockchain with validated blocks (`chain update of 400 blocks`), etc
 
 {{% notice note  %}}
-Should you wish to enter the container without starting NIS, you can do that by passing `--no-nis` as first argument to the run command.
-For example, `docker/run.sh --no-nis bash` will drop you in a shell in the container, but without starting NIS.
+Should you wish to start the containers without starting NIS, you can do that by passing `--no-nis` as first argument to the ndev command.
 {{% /notice  %}}
 
 
 ## First request
 
-As our NIS instance is up and running, we can send our first request to it. We'll use [httpie](https://httpie.org/), which is already installed in the docker image.
+As our NIS instance is up and running, we can send our first request to it. We can send request to the NIS instance on port 7890 of localhost, 
+from the host or from the tools container.
+
+We'll use [httpie](https://httpie.org/), which is already installed in the tools.
 Our first request will be to [get the status](http://bob.nem.ninja/docs/#status-request)  of the NIS instance with a `GET` request to `/status`. Here's the result:
 
 {{< httpie "code/setup_status.html" >}}

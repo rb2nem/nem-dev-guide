@@ -12,6 +12,8 @@
 # we look for the config file in the same directory as the script, whose location
 # is stored in this variable
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
+# by default start nis
+with_nis=1
 
 usage() {
     cat <<-EOF
@@ -77,7 +79,7 @@ handle_args() {
             # an unrecognised option is interpreted as the end of options
 	    # and sets the remaining value as the command to be run
             *)
-	    if [[ $key=~"-.*" ]]; then
+	    if [[ $key =~ ^-.* ]]; then
                  echo "Unrecognised option, please run \"$0 --help\""
                  exit 1
             else
@@ -182,5 +184,5 @@ handle_command $cmd
 start_containers
 check_running_containers
 if [[ -n "$cmd" ]]; then
-  docker exec -it $(eval "echo \$${container}_container") "$cmd"
+  docker exec -it $(eval "echo \$${container}_container") $cmd
 fi

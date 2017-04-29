@@ -47,49 +47,62 @@ You can pass POST data on the command line as key-value pairs. For string value,
 
 [jq](https://stedolan.github.io/jq/) is a command line JSON processor. It comes very handy for scripting and quick validations.
 
+### mitmproxy
+[mitmproxy](https://mitmproxy.org/) is a intercept and inspect traffic flows. [mitmweb](http://docs.mitmproxy.org/en/stable/mitmweb.html) provides a web interface providing easy access to information required in debugging sessions.
+
 ## Docker config
 
-A docker config has been implemented to accompany this dev guide. It is located in the [`docker/` subdirectory of this very repository](https://github.com/rb2nem/nem-dev-guide).
-It is a docker image based on Ubuntu 16.04, the latest long term support release available.
-When you run the container, it start a NIS node on the testnet. All software needed in this guide is also installed in the docker container.
+Two containers are accompanying this developer guide, one running only NIS on the testnet, the other proposing all other tools like mitm and nem-sdk.
+As both containers are meant to always run together, a [docker-compose configuration file](https://github.com/rb2nem/nem-dev-guide/blob/master/docker/docker-compose.yml) is available. 
+Both images are based on Ubuntu.
 
-NIS is started by [supervisord](http://www.supervisord.org). The NIS data is stored under /var/lib/nem, and the logs are available at 
+In the NIS container, NIS is started by [supervisord](http://www.supervisord.org). The NIS data is stored under /var/lib/nem, and the logs are available at 
 `/var/log/nis-stderr.log` and `/var/log/nis-stdout.log`.
 
 ### Using the docker config
 
-A `run.sh` script is available in the `/docker` directory.
+A helper script `ndev` [is available](https://github.com/rb2nem/nem-dev-guide/blob/master/docker/ndev). This section will give an overview on its usage.
 
-Before running it, create a directory where the container will store its persistent data. This is needed to 
+Start by downloading the script in a working directory, for example `nem-dev`, and make it executable:
+
+```
+mkdir nem-dev
+cd nem-dev
+curl -q https://raw.githubusercontent.com/rb2nem/nem-dev-guide/master/docker/ndev > ndev
+chmod +x ndev
+```
+
+Running the script with `--help` will give you an overview of all its options. We'll take a look at the most used options.
+
+Before running the script, create a directory where the container will store its persistent data. This is needed to 
 avoid a full blockchain download at every update of the image.
 
-Then simply execute the script:
-```
-docker/run.sh
-```
-It will prompt you for the path directory which will host persistent data, then builds and run the container.
-It drops you in a bash shell inside the container.
+The first time you run the script, it will:
 
-### Manually building the docker image
-If you want to do it yourself, here it is. To build the Docker image, go in the `docker`subdirectory and issue the build command:
-```
-cd docker/
-docker build -t nemdev .
-```
-You can now run a container based on the image. The best and advised solution is to create a directory on your host in which the 
-data of NIS will be persistently stored. That way you can create a new container without having to redownload the whole NEM blockchain
-(eg in case of upgrades of NIS). In our example we will store the data in `/data/nis-data`, but you can choose another location as long
-as you pass it as an absolute path (ie the path must start with `/`).
-```
-persistent_location="/data/nis-data"
-[[ -d $persistent_location ]] || mkdir $persistent_location
-docker run -it --rm -v $persistent_location:/var/lib/nem -p 7890:7890 nemdev bash
-```
+* check if its settings.sh file exists, and create it if needed. The user is prompted for values to be provided.
+* check if the required docker-compose.yml file is present, and download it [from github](https://github.com/rb2nem/nem-dev-guide/blob/master/docker/docker-compose.yml) if needed
+* Download docker [images from the DockerHub](https://hub.docker.com/r/rb2nem/nem-dev-guide/)
 
-This will drop you in a shell from which you can replicate the commands in this dev guide. The NIS is listening on localhost port 7890.
-If you want to make NIS available from your host, you just have to pass this additional flags: `-p 7890:7890`.
+If you run the script without any argument, it will start the containers in background.
 
-### Customising the docker config
-You can of course customise the docker image built. Just remember that the Dockerfile of this guide might also evolve. If you want to 
-follow the changes of it, you might have to merge your changes. Strategies to do that might be to use `git stash` or a dedicated git branch
-which you rebase. Explaining this is out of scope of this guide though.
+To check that the containers are running, you use `./ndev --status`.
+You can also run a command in the containers, by passing the command as argument to `ndev`. By default, commands are executed 
+in the tools container, where mitm is running.
+Open a shell in the tools container: `ndev bash`.
+You can select the container in which to run the command with the option `-c` or `--container`. To open a shell in the NIS container,
+simply run `ndev -c nis bash`.
+
+Processes in the containers are managed with [supervisord](http://supervisord.org/). You can manually control NIS. For example, to stop
+nis, simply issue `ndev -c nis supervisorctl start nis`. To get an overview of the processes running in a container, user the command 
+`supervisorctl status`, for example:
+
+```
+$ ./ndev -c nis supervisorctl status
+nis                              RUNNING   pid 109, uptime 0:01:03
+```
+Only the tools container has ports mapped to the host. Port 7890 is mapped to the mitmweb process, which then sends the requests to 
+the NIS process running in the other container. This makes it possible to inspect requests, as mitmweb exposes a web interface on 
+port 8081 of the host, accessible at [http://127.0.0.1:8081](http://127.0.0.1:8081). If you get a blank page with Google Chrome, try with 
+[Firefox](http://www.getfirefox.com).
+
+You stop the containers with `ndev --shutdown`.
