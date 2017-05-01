@@ -1,7 +1,7 @@
 from ubuntu:17.04
 
 RUN apt update
-RUN apt-get install -y  curl httpie supervisor jq mitmproxy tmux net-tools nano telnet nodejs npm tmux
+RUN apt-get install -y  curl httpie supervisor jq mitmproxy tmux net-tools nano telnet nodejs npm tmux ruby ruby-dev rubygems
 RUN npm install -g npm && \
     npm cache clean -f && \
     npm install -g n && \

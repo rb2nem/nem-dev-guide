@@ -5,9 +5,9 @@ services:
     image: "rb2nem/nem-dev-guide:nis"
     volumes:
      - ${persistent_location}:/var/lib/nem
-  nemdevmitm:
-#    build: "mitm"
-    image: "rb2nem/nem-dev-guide:mitm"
+  nemdevtools:
+#    build: "tools"
+    image: "rb2nem/nem-dev-guide:tools"
     ports:
      - "8081:8081"
      - "8082:8082"

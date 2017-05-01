@@ -28,7 +28,7 @@ usage() {
 	Options are:
 	    -c name
 	    --container name
-	       apply command to container. name can be nis or mitm
+	       apply command to container. name can be nis or tools
 	    -n
 	    --no-nis
 	       do not start NIS in the container.
@@ -112,10 +112,10 @@ handle_config_file() {
 handle_command() {
 	case $1 in
 	  repl.js)
-	    container="mitm"
+	    container="tools"
 	    ;;
 	  bash)
-	    [[ -z $container ]] && container="mitm"
+	    [[ -z $container ]] && container="tools"
 	    ;;
 	esac  
 
@@ -124,7 +124,7 @@ handle_command() {
 check_running_containers() {
     containers=$(docker ps --format '{{.Names}}' | grep $(basename $script_dir)_nemdev)
     nis_container=$(echo "$containers" | grep nis)
-    mitm_container=$(echo "$containers" | grep mitm)
+    tools_container=$(echo "$containers" | grep tools)
 }
 
 
@@ -146,9 +146,9 @@ start_containers() {
 	###############################################################################
 	Welcome to the NEM developer's guide Docker containers.
 	Two containers have been started, one running NIS ($nis_container), and the
-	other ($mitm_container) running mitmproxy.
+	other ($tools_container) running mitmproxy.
 	
-	Only the mitmproxy container has ports mapped to your host:
+	Only the tools container has ports mapped to your host:
 	- 7890 : to contact the NIS instance running in the nis container through mitmproxy
 	- 7778 : to contact the NIS instance' websocket port through mitmproxy
 	- 8081 : to view requests to NIS intercepted by mitmproxy
