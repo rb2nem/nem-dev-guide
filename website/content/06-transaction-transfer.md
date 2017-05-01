@@ -1,6 +1,6 @@
 +++
 prev = "/05-transaction-overview"
-next = "90-snippets"
+next = "80-debugging"
 weight = 60
 title = "Transfer Transactions"
 toc = true

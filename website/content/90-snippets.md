@@ -1,6 +1,6 @@
 +++
 next = "99-references"
-#prev = "06-transaction-transfer"
+prev = "80-debugging"
 weight = 900
 title = "Code snippets"
 date = "2017-04-29T15:02:00+02:00"
