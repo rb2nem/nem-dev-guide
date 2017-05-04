@@ -109,3 +109,15 @@ resp=RestClient.post 'http://localhost:7890/block/at/public', {'height': 243}.to
 => <RestClient::Response 200 "{\"timeStamp...">
 ```
 Sure enough! We now successfully debugged and sent a request from Ruby.
+
+## Debugging Websockets
+Debugging websockets is not as accessible as debugging your HTTP requests. There's no perfect solution, and we will debug 
+websocket connections with the Google Chrome console, as well as with Wireshark. None of these is great to debug websockets,
+but combining both tools might help you get forward.
+
+In this section, we will not open websocket connections ourselves, but we will see how to observe the traffic on the websocket
+connections opened by the NanoWallet.
+
+### With Google Chrome
+
+### With Wireshark

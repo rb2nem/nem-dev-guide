@@ -75,7 +75,8 @@ chmod +x ndev
 Running the script with `--help` will give you an overview of all its options. We'll take a look at the most used options.
 
 Before running the script, create a directory where the container will store its persistent data. This is needed to 
-avoid a full blockchain download at every update of the image.
+avoid a full blockchain download at every update of the image. This directory will also hold the network traces automatically
+captured with tcpdump in the nis container.
 
 The first time you run the script, it will:
 
