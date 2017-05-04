@@ -17,6 +17,10 @@ fi
 
 # set owner nem, in case it is mounted from the host
 chown -R nem /var/lib/nem
+# cleanup old traces
+rm -rf /var/lib/nem/traces
+mkdir -p /var/lib/nem/traces
+
 
 
 if [[ $# -eq 0 ]] ; then
