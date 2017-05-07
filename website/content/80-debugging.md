@@ -120,4 +120,105 @@ connections opened by the NanoWallet.
 
 ### With Google Chrome
 
+You can open the Google Chrome inspctor by pressing CTRL-SHIFT-I. In the Inspector, select the `Network` tab (surrounded in screenshot), and select to only 
+display websockets by clicking on `WS` (indicated by the red arrow in the screenshot).
+If you open the inpector on a page that is loaded, you will have to reload the page as indicated:
+{{< figure src="/images/debugging_chrome_inspector.png" title="Chrome Inspector Overview" >}}
+
+When you login to the NanoWallet with the Inspector open and with the filter displaying only websocket connections, you will see
+a websocket connection established:
+
+{{< figure src="/images/debugging_ws_open.png" title="Websocket Connection opened" >}}
+
+By selecting the connection in the list, you can take a closer look to the connection. By default,
+the detailed view of the connection open on the headers tab showing all headers of the connection, both for request and response:
+
+{{< figure src="/images/debugging_ws_headers.png" title="Websocket Connection Headers" >}}
+
+The websocket connection is a persistent connection over which multiple data frames are exchanged. Luckily, the inspector lets
+us take a close look at the frames exchanged. Selecting the Frames tab gives you a list of frames exchanged over the connection.
+This list is updated automatically as new frames are exchanged:
+
+{{< figure src="/images/debugging_ws_frames.png" title="Websocket Connection Frames" >}}
+
+Let's focus a bit on the frames list after opening a wallet in the NanoWallet client:
+{{< figure src="/images/debugging_ws_frames_list.png" title="Websocket Connection Frames List" >}}
+
+Outgoing messages have a light-green background, incoming messages have a white background. WebSocket opcodes are light-yellow
+and errors are light-red (from the [Google Chrome documentation](https://developers.google.com/web/tools/chrome-devtools/network-performance/reference#frames)).
+
+We see that we send a frame to connected, and we get confirmation that we have successfully connected.
+
+After that, the NanoWallet client subscribes to multiple notifications. We see a total of 9 subscriptions
+(sub-0 to sub-9) for information regarding the account `TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G` like
+transactions, mosaics, namespaces. There are also global subscriptions for errors and new blocks. Subscription
+related information have been highlighted in red in the screenshot.
+
+In addition to subscriptions, some other frames are sent to request information about the account. Subscriptions
+will only get messages sent when an update is available, but the NanoWallet client needs to retrieve that information
+to display the current status of the account. This is done by sending SEND command messages. The information regarding these 
+requests are highlighted in blue in the screenshot. We see that the information requested covers the account details, 
+the transactions of that account, as well as the mosaics and namespaces.
+
+Following that are some frames received in relation with the 9 subscriptions just created. The first MESSAGE
+received is part of `sub-0`
+
+Selecting a frame in that list will display its content:
+{{< figure src="/images/debugging_ws_details.png" title="Websocket Frame Details" >}}
+
+But here is the result is far from great. The frame's content is just displayed on one line, which does not ease 
+reading and analysing the frame....
+
+Advanced socket information can be gathered from the Google Chrome internal socket details available 
+at [chrome://net-internals/#sockets](chrome://net-internals/#sockets), but this is out of scope for this guide.
+
 ### With Wireshark
+
+The container nis container provided with this guide automatically collects traces of the network traffic to and from
+the NIS instance it runs. The traces are stored in the `traces` subdirectory of the directory you configured as the location
+for the persistent data. See the variable `persistent_location` in the file `settings.sh` in the same location as the `ndev` 
+executable used to control the containers.
+
+Two traces are captured: `nis.pcap` for traffic on port 7890 (http requests) and `ws.pcap` for traffic on port 7778 (websockets).
+We will use the ws.pcap file to observe websocket traffic.
+
+A great tool to analyse the traces captured is [Wireshark](https://www.wireshark.org/), and this is what we will use.
+It is free software, available for Linux, Mac and Windows.
+
+When you start Wireshark, you will not start a live capture but open the existing capture file available in the persistent
+location you configured. But as that file is continuously updated, you will git this error:
+{{< figure src="/images/debugging_wireshark_truncated_file.png" title="Wireshark Warning" >}}
+
+This is not a problem for our analysis, it just means that we have openen a file in which the last packet was not completely
+written to disk. All packets in the trace are usable though, and will give us a detailed view on the websocket traffic.
+
+When you open the traces file, you get something like this:
+{{< figure src="/images/debugging_wireshark_overview.png" title="Wireshark window" >}}
+Each line is a TCP packet, and aggregated views for supported protocols (like HTTP, websocket, etc)  also have a line displayed.
+We are only interested in websocket traffic, so we can filter to only display the lines of interest. Enter `websocket` in the
+text field at the top of the list and press enter:
+{{< figure src="/images/debugging_wireshark_websocket_filter.png" title="Wireshark filter" >}}
+This result in the list only displaying websocket protocol information, offering a higher level view than the TCP packets,
+in which we are not interested for our analysis.
+
+As in our analysis with Google Chrome, we see the CONNECT packet sent by our browser:
+{{< figure src="/images/debugging_wireshark_connect.png" title="Websocket CONNECT" >}}
+We know that this frame is sent by our client, so we deduce that the server address is 172.18.0.3, and the client address
+is 172.18.0.2.
+Following by the CONNECT request, we receive a CONNECTED message confirming our websocket connection is successfully established:
+{{< figure src="/images/debugging_wireshark_connected.png" title="Websocket CONNECTED" >}}
+
+We also see the subscription request being sent:
+
+{{< figure src="/images/debugging_wireshark_subscribe_one.png" title="Websocket Connection Frames List" >}}
+
+The first request is displayed individually, but the other subscription requests are grouped in one entry:
+{{< figure src="/images/debugging_wireshark_subscribe_multiple.png" title="Websocket Connection Frames List" >}}
+
+After that are the SEND command sent by the client:
+{{< figure src="/images/debugging_wireshark_send.png" title="Websocket SEND commands" >}}
+and the MESSAGEs received from the server:
+{{< figure src="/images/debugging_wireshark_message.png" title="Websocket MESSAGE answers" >}}
+
+But here again, the display is not perfect, but this description should help you get up to speed regarding the debugging of
+your websocket requests.
