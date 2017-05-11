@@ -38,6 +38,10 @@ when relevant. As an example, here is the output when querying google.com, where
 You can pass POST data on the command line as key-value pairs. For string value, separate key and value with `=`, for non-string values like integer, use `:=`.
 {{% /notice %}}
 
+### Insomnia
+
+[Insomnia](https://insomnia.rest/) is a great cross platform graphical REST client. Check it out, it might help you greatly in your development workflow.
+
 ### nodejs and nem-sdk
 
 [nem-sdk](https://github.com/QuantumMechanics/NEM-sdk) is a javascript Nem library.
