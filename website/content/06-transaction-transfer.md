@@ -1,6 +1,6 @@
 +++
 prev = "/05-transaction-overview"
-next = "80-debugging"
+next = "07-monitoring-blockchain"
 weight = 60
 title = "Transfer Transactions"
 toc = true

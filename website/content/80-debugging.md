@@ -1,7 +1,7 @@
 +++
-prev = "/06-transaction-transfer"
+prev = "/07-monitoring-blockchain"
 next = "90-snippets"
-weight = 80
+weight = 800
 title = "Debugging"
 toc = true
 +++
