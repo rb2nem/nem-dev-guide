@@ -88,8 +88,16 @@ else
 fi
 ```
  
-Putting all this in a script results in this:
-``` bash
+Putting all this in a script results in this. You can select another tab to see
+the same implementation in that language:
+
+{{% tabs %}}
+  {{% tab_header "Bash" "activetab" %}}
+  {{% tab_header "Ruby" %}}
+{{% /tabs %}}
+
+{{< tabs_content >}}
+  {{% tab_pane "Bash" %}}```
 #!/bin/bash
 
 observed_address="TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G"
@@ -113,6 +121,40 @@ while true; do
     fi
 done
 ```
+  {{% /tab_pane %}}
+
+
+  {{% tab_pane "Ruby" %}}
+``` ruby
+require 'rest-client'
+require 'json'
+
+observed_address="TC6LCF7ZCL5WL4HTE64JPUU2UPVKNZB2LMVUNELV"
+last_block_analysed=0
+while true
+  r=RestClient.get 'localhost:7890/chain/height'
+  chain_height=JSON.parse(r.body)["height"]
+  if last_block_analysed==chain_height
+    puts "sleeping"
+    sleep 15
+  else
+    r=RestClient.get('localhost:7890/chain/last-block')
+    b=JSON.parse(r.body)
+    last_block_analysed=b["height"]
+    b["transactions"].select{|t| t["recipient"]=="observed_address"}.each do |recipient|
+      puts "We received a transaction!"
+    end
+  end
+end
+```
+  {{% /tab_pane %}}
+
+{{< /tabs_content >}}
+
+
+
+
+
 
 ### Slow polling
 
