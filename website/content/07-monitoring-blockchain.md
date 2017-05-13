@@ -93,7 +93,7 @@ the same implementation in that language:
 
 {{% tabs %}}
   {{% tab_header "Bash" "activetab" %}}
-  {{% tab_header "Ruby" %}}
+  {{% tab_header "Ruby" ""%}}
 {{% /tabs %}}
 
 {{< tabs_content >}}
