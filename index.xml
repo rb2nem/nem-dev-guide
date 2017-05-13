@@ -100,6 +100,16 @@ Here is the data returned when we request a transaction by its hash, with each f
     </item>
     
     <item>
+      <title>Monitoring the blockchain</title>
+      <link>https://rb2nem.github.io/nem-dev-guide/07-monitoring-blockchain/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://rb2nem.github.io/nem-dev-guide/07-monitoring-blockchain/</guid>
+      <description>Monitoring the blockchain is possibly an important part of your application on NEM. The most obvious example being monitoring activities involving your account. Two approaches are possible.
+The first is polling, meaning that regularly you retrieve the last block and handle it. If your polling interval is significantly smaller than the average block generation time, you can be sure you will handle all blocks. And if your polling interval is bigger and multiple blocks have been generated between two polling, you can still request all new blocks in your handler.</description>
+    </item>
+    
+    <item>
       <title>Debugging</title>
       <link>https://rb2nem.github.io/nem-dev-guide/80-debugging/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
