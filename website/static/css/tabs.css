@@ -15,7 +15,7 @@ ul.tabs li a {
 	position: relative;
 	display: block;
 	margin-top: 40px;
-	padding: 0 10px 0 0;
+	padding: 0 10px 0 10px;
 	font-family: 'Open Sans', sans-serif;
 	font-size: 18px;
 	text-align: center;	
