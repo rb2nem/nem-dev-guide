@@ -161,10 +161,87 @@ end
 If the polling interval is too big, the code has to be prepared to query blocks that were generated during the
 polling interval.
 
-* retrieve the last block
-  * if this is a block we already handled, wait for x seconds.
-  * if this is a new block: 
-         * if this is the next expected block, handle it and remember this was the last block we've seen
-         * if multiple blocks have been generated since the last block handled, retrieve all these block individually and handle them
+We will implement this in Ruby. Here are the steps we will execute:
+
+* retrieve the block chain heigh
+* while the last block analysed has a height smaller than the current blockchain heigh:
+  * fetch the block following the last block analysed
+  * check if the block has a transaction of interest
+  * update the last block analysed to the one we just analysed
+* wait some time
 * repeat
 
+
+As this requires a bit more logic than the previous example, we will structure our code a bit better.
+For each operation we will define a function. The first one is to retrieve the current blockchain height,
+which issues a get request to `/chain/height`.
+
+```
+def current_height
+  res = RestClient.get('http://localhost:7890/chain/height')
+  JSON.parse(res.body)["height"]
+end
+```
+
+We will also need a function to retrieve a block at a specific height. This is done
+by passing a JSON payload specifying the height to a POST request:
+```
+def block_at(height)
+  res = RestClient.post('http://localhost:7890/block/at/public', {'height': height}.to_json , {content_type: :json, accept: :json})
+  JSON.parse(res.body)
+end
+```
+This code sends a POST request to /block/at/public, with a JSON payload specifying the height of the block to return, and sets HTTP headers
+regarging the content type.
+
+We will also need to check if a block as a transaction to the observed address, and this is done with this function:
+```
+def block_has_recipient(block,recipient)
+    block["transactions"].collect {|tx| tx["recipient"]}.include?(recipient)
+end
+```
+What this code is first collect all recipients found in transaction, and then check if this array contains our recipient of interes.
+
+With these helper functions in place, putting the pieces together is a nearly literal translation of the steps
+highlighted above. We require the needed libraries, define the helper functions, initialise the variables holding the 
+address observed, and the height of the last block analysed (in our case set to the current height), resulting in this code:
+
+``` ruby
+require 'rest-client'
+require 'json'
+
+def block_at(height)
+  res = RestClient.post('http://localhost:7890/block/at/public', {'height': height}.to_json , {content_type: :json, accept: :json})
+  JSON.parse(res.body)
+end
+
+def current_height
+  res = RestClient.get('http://localhost:7890/chain/height')
+  JSON.parse(res.body)["height"]
+end
+
+def block_has_recipient(block,recipient)
+    block["transactions"].collect {|tx| tx["recipient"]}.include?(recipient)
+end
+
+
+observed_address="TDK4QKF7HBHEAFTEUROFMCAFJQGBZTSZ2ZSGZKZM"
+last_block_analysed=current_height()
+
+while true
+  chain_height=current_height()
+  while last_block_analysed<chain_height
+    # get block at height last_block_analysed+1
+    block=block_at(last_block_analysed+1)
+    # analyse block
+    if block_has_recipient(block,observed_address)
+      puts "transaction found in block at height #{last_block_analysed+1}"
+    else
+      puts "no watched recipient in block at heigh #{last_block_analysed+1}"
+    end
+    last_block_analysed=last_block_analysed+1
+  end
+  sleep 300
+end
+
+```
