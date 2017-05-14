@@ -14,6 +14,7 @@
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 # by default start nis
 with_nis=1
+pull=0
 
 usage() {
     cat <<-EOF
@@ -32,10 +33,14 @@ usage() {
 	    -n
 	    --no-nis
 	       do not start NIS in the container.
+	    -p
+	    --pull
+	       pull new images from the Docker Hub and exit
 	    -s
 	    --shutdown
 	       shutdown containers. This flag has the highest priotity and
-	       will be handled befor all others
+	       will be handled befor all others.
+	       Note that **THIS DELETES ALL DATA IN THE CONTAINER**.
 	    -S
 	    --status
 		   display running containers before handling other flags 
@@ -66,6 +71,10 @@ handle_args() {
             ;;
 	    -h|--help)
 	    usage
+	    shift
+	    ;;
+	    -p|--pull)
+	    pull=1
 	    shift
 	    ;;
 	    -s|--shutdown)
@@ -163,6 +172,17 @@ start_containers() {
     fi
 }
 
+pull_images() {
+	# no container specified, update both images
+	if [[ -z $container ]] ; then
+	    docker pull rb2nem/nem-dev-guide:nis
+	    docker pull rb2nem/nem-dev-guide:tools
+	else
+	# container specified, only update its images
+	    docker pull rb2nem/nem-dev-guide:$container
+        fi
+}
+
 # go to script directory to have Dockerfile available
 cd $script_dir
 handle_args "$@"
@@ -170,7 +190,10 @@ handle_config_file
 check_compose_file
 check_running_containers
 
-
+if [[ $pull -eq 1 ]] ; then
+    pull_images
+    exit
+fi
 if [[ $state -eq 1 ]] ; then
     echo "running containers are:"
     echo "$containers"
