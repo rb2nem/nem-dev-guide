@@ -297,6 +297,7 @@
 <li><a href="#rapid-polling">Rapid polling</a></li>
 <li><a href="#slow-polling">Slow polling</a></li>
 </ul></li>
+<li><a href="#passive-monitoring-the-subscription-approach">Passive monitoring: the subscription approach</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -625,6 +626,128 @@ while true
 end
 
 </code></pre>
+
+<h2 id="passive-monitoring-the-subscription-approach">Passive monitoring: the subscription approach</h2>
+
+<p>While in the previous sections our program was actively contacting our NIS instance to check if action should be taken
+because a new block was generated, we can use a passive approach in which our program subscribes to notification of
+specific events. This is done over a websocket connection.</p>
+
+<p>The NEM Infrastructure Server listens for websocket connections on port 7778. It expects <a href="https://stomp.github.io/">STOMP</a> formatted
+messages. If your language provides libraries to communicate with STOMP over websockets, it should be easy to interoperate with NIS.
+Just note that Websocksets require a handshake, which is visible at the stomp client level. If you are interested in more details,
+<a href="http://jmesnil.net/stomp-websocket/doc/#requirements">a good explanation is available on the web</a>.</p>
+
+<p>We will work in javascript, for which the libraries sockjs-client and stompjs cover our needs. These can be installed with</p>
+
+<pre><code>npm install -g sockjs-client
+npm install -g stompjs
+</code></pre>
+
+<p>The implementation is quite straightforward when you know how and to which messages you need to subscribe.
+We will work in the nodejs REPL, which you can start with <code>node</code>, or if you use the containers of this guide, with
+<code>./ndev repl.js</code>.</p>
+
+<p>The URL you need to connect to for websockets is <code>http://$NIS:7778/w/messages</code> (replace $NIS with the IP or hostname of the NIS
+you want to connect to). If you run in the tools container, you can use <code>localhost</code>.</p>
+
+<p>To be notified of new blocks, you subscribe to <code>/blocks/new</code>. The body of the notification is simply the height of
+the new block.</p>
+
+<p>Now that we have all information, we can take a closer look at the implementation.
+First we require the libraries:</p>
+
+<pre><code class="language-javascript">var Stomp=require('stompjs');
+var SockJS=require('sockjs-client');
+</code></pre>
+
+<p>Then we open the websocket connection and create the STOMP connection over it.</p>
+
+<pre><code class="language-javascript">var socket = new SockJS('http://localhost:7778/w/messages');
+var stompClient = Stomp.over(socket);
+</code></pre>
+
+<p>As mentioned above, websockets require a handshake, and we need to initiate it from the STOMP client.
+When the connection is established, it will trigger a callback passed as second argument to the <code>connect</code> function:</p>
+
+<pre><code class="language-javascript">stompClient.connect({}, callback);
+</code></pre>
+
+<p>The callback is a function taking as argument the frame received from the server. In this case it will be the frame
+confirming the connection.
+In the callback you can subscribe to the messages of interest. In this example we will subscribe to the new block notification,
+and simply log the height of the new block in the console:</p>
+
+<pre><code class="language-javascript">var callback=function(frame){
+        stompClient.subscribe('/blocks/new', function(data) {
+                             var blockHeight = JSON.parse(data.body);
+                             console.log(blockHeight);
+                         });
+}
+</code></pre>
+
+<p>Putting it all together, here is our code:</p>
+
+<pre><code class="language-javascript">// require libraries
+var Stomp=require('stompjs');
+var SockJS=require('sockjs-client');
+// create socket to websocket URL
+var socket = new SockJS('http://localhost:7778/w/messages');
+// create a STOMP client over that websocket connection
+var stompClient = Stomp.over(socket);
+// Define the callback function that we want to execute after connection.
+// Here we subscribe to new block notifications
+var callback=function(frame){
+        stompClient.subscribe('/blocks/new', function(data) {
+                             var blockHeight = JSON.parse(data.body);
+                             console.log(blockHeight);
+                         });
+}
+
+// Connect and subscribe 
+stompClient.connect({}, callback );
+</code></pre>
+
+<p>This will notify your program when a new block is available, but you would still need to go and retrieve the block to check
+if it includes transactions involving your account. But we can do better! We can ask to be notified of new transactions involving
+a specific account. This is done by subscribing to the channel <code>/transactions/$ADDRESS</code> (replace $ADDRESS by the account&rsquo;s address,
+all uppercase and without hyphen). Here is an example illustrating the format of the frame you receive:</p>
+
+<pre><code class="language-json"> Frame {
+  command: 'MESSAGE',
+  headers: 
+   { 'content-length': '541',
+     'message-id': '3tbjipuy-147',
+     subscription: 'sub-0',
+     destination: '/transactions/TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G' },
+  body: '{&quot;meta&quot;:{&quot;innerHash&quot;:{},&quot;id&quot;:0,&quot;hash&quot;:{&quot;data&quot;:&quot;ccd0ab18ea047922b646b82f6171d227a348cfe35ef793930e950e5c82243cdf&quot;},&quot;height&quot;:942799},&quot;transaction&quot;:{&quot;timeStamp&quot;:67191609,&quot;amount&quot;:1000000,&quot;signature&quot;:&quot;dcb6e30b2a750d5bc95b94a33b620bfc90dbd2a71a730a335315fdf55d859467bc70ae797c91fe52ce0a44fa83db84ecc090cf3b91aea4928f3113ec51b3b907&quot;,&quot;fee&quot;:1000000,&quot;recipient&quot;:&quot;TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G&quot;,&quot;type&quot;:257,&quot;deadline&quot;:67195209,&quot;message&quot;:{},&quot;version&quot;:-1744830463,&quot;signer&quot;:&quot;73211c5f54b7595ade5cd0c5583b91076e33eb99c8b601cf76043e5a176b4f57&quot;}}\r\n',
+  ack: [Function],
+  nack: [Function] }
+</code></pre>
+
+<p>With this information, it is easy to write our program that will log to the console the amount in microXEMs of transactions involving our
+account:</p>
+
+<pre><code class="language-javascript">var Stomp=require('stompjs');
+var SockJS=require('sockjs-client');
+socket = new SockJS('http://localhost:7778/w/messages');
+stompClient = Stomp.over(socket);
+stompClient.debug = undefined;
+stompClient.connect({}, function(frame) {
+        stompClient.subscribe('/transactions/TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G', function(data) {
+                             var body = JSON.parse(data.body);
+                             console.log(body.transaction.amount);
+                         });
+
+
+
+});
+</code></pre>
+
+<p>You might want to check if this is an incoming our outgoing transaction. But that&rsquo;s left as an exercice for the reader ;-)</p>
+
+<p>If you want to have a look at other websocket features proposed by NIS, the best place to look is <a href="https://github.com/QuantumMechanics/nem-lightwallet/tree/master/lightwallet">the deprecated lightwallet
+documentation</a>.</p>
 
 
       
