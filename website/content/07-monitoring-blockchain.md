@@ -245,3 +245,122 @@ while true
 end
 
 ```
+## Passive monitoring: the subscription approach
+While in the previous sections our program was actively contacting our NIS instance to check if action should be taken
+because a new block was generated, we can use a passive approach in which our program subscribes to notification of
+specific events. This is done over a websocket connection.
+
+The NEM Infrastructure Server listens for websocket connections on port 7778. It expects [STOMP](https://stomp.github.io/) formatted
+messages. If your language provides libraries to communicate with STOMP over websockets, it should be easy to interoperate with NIS.
+Just note that Websocksets require a handshake, which is visible at the stomp client level. If you are interested in more details,
+[a good explanation is available on the web](http://jmesnil.net/stomp-websocket/doc/#requirements).
+
+We will work in javascript, for which the libraries sockjs-client and stompjs cover our needs. These can be installed with
+```
+npm install -g sockjs-client
+npm install -g stompjs
+```
+The implementation is quite straightforward when you know how and to which messages you need to subscribe. 
+We will work in the nodejs REPL, which you can start with `node`, or if you use the containers of this guide, with 
+`./ndev repl.js`.
+
+The URL you need to connect to for websockets is `http://$NIS:7778/w/messages` (replace $NIS with the IP or hostname of the NIS
+you want to connect to). If you run in the tools container, you can use `localhost`.
+
+To be notified of new blocks, you subscribe to `/blocks/new`. The body of the notification is simply the height of 
+the new block.
+
+Now that we have all information, we can take a closer look at the implementation.
+First we require the libraries:
+``` javascript
+var Stomp=require('stompjs');
+var SockJS=require('sockjs-client');
+```
+Then we open the websocket connection and create the STOMP connection over it.
+``` javascript
+var socket = new SockJS('http://localhost:7778/w/messages');
+var stompClient = Stomp.over(socket);
+```
+As mentioned above, websockets require a handshake, and we need to initiate it from the STOMP client.
+When the connection is established, it will trigger a callback passed as second argument to the `connect` function:
+``` javascript
+stompClient.connect({}, callback);
+```
+The callback is a function taking as argument the frame received from the server. In this case it will be the frame
+confirming the connection.
+In the callback you can subscribe to the messages of interest. In this example we will subscribe to the new block notification,
+and simply log the height of the new block in the console:
+
+``` javascript
+var callback=function(frame){
+        stompClient.subscribe('/blocks/new', function(data) {
+                             var blockHeight = JSON.parse(data.body);
+                             console.log(blockHeight);
+                         });
+}
+```
+
+Putting it all together, here is our code:
+
+
+``` javascript
+// require libraries
+var Stomp=require('stompjs');
+var SockJS=require('sockjs-client');
+// create socket to websocket URL
+var socket = new SockJS('http://localhost:7778/w/messages');
+// create a STOMP client over that websocket connection
+var stompClient = Stomp.over(socket);
+// Define the callback function that we want to execute after connection.
+// Here we subscribe to new block notifications
+var callback=function(frame){
+        stompClient.subscribe('/blocks/new', function(data) {
+                             var blockHeight = JSON.parse(data.body);
+                             console.log(blockHeight);
+                         });
+}
+
+// Connect and subscribe 
+stompClient.connect({}, callback );
+```
+
+This will notify your program when a new block is available, but you would still need to go and retrieve the block to check
+if it includes transactions involving your account. But we can do better! We can ask to be notified of new transactions involving
+a specific account. This is done by subscribing to the channel `/transactions/$ADDRESS` (replace $ADDRESS by the account's address,
+all uppercase and without hyphen). Here is an example illustrating the format of the frame you receive:
+
+``` json
+ Frame {
+  command: 'MESSAGE',
+  headers: 
+   { 'content-length': '541',
+     'message-id': '3tbjipuy-147',
+     subscription: 'sub-0',
+     destination: '/transactions/TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G' },
+  body: '{"meta":{"innerHash":{},"id":0,"hash":{"data":"ccd0ab18ea047922b646b82f6171d227a348cfe35ef793930e950e5c82243cdf"},"height":942799},"transaction":{"timeStamp":67191609,"amount":1000000,"signature":"dcb6e30b2a750d5bc95b94a33b620bfc90dbd2a71a730a335315fdf55d859467bc70ae797c91fe52ce0a44fa83db84ecc090cf3b91aea4928f3113ec51b3b907","fee":1000000,"recipient":"TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G","type":257,"deadline":67195209,"message":{},"version":-1744830463,"signer":"73211c5f54b7595ade5cd0c5583b91076e33eb99c8b601cf76043e5a176b4f57"}}\r\n',
+  ack: [Function],
+  nack: [Function] }
+```
+
+With this information, it is easy to write our program that will log to the console the amount in microXEMs of transactions involving our 
+account:
+``` javascript
+var Stomp=require('stompjs');
+var SockJS=require('sockjs-client');
+socket = new SockJS('http://localhost:7778/w/messages');
+stompClient = Stomp.over(socket);
+stompClient.debug = undefined;
+stompClient.connect({}, function(frame) {
+        stompClient.subscribe('/transactions/TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G', function(data) {
+                             var body = JSON.parse(data.body);
+                             console.log(body.transaction.amount);
+                         });
+
+
+
+});
+```
+You might want to check if this is an incoming our outgoing transaction. But that's left as an exercice for the reader ;-)
+
+If you want to have a look at other websocket features proposed by NIS, the best place to look is [the deprecated lightwallet 
+documentation](https://github.com/QuantumMechanics/nem-lightwallet/tree/master/lightwallet).
