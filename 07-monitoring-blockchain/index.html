@@ -657,14 +657,16 @@ the new block.</p>
 <p>Now that we have all information, we can take a closer look at the implementation.
 First we require the libraries:</p>
 
-<pre><code class="language-javascript">var Stomp=require('stompjs');
-var SockJS=require('sockjs-client');
+<pre><code class="language-javascript">var stomp=require('stompjs');
+var sockjs=require('sockjs-client');
 </code></pre>
+
+<p>Note that if you use the repljs script with <code>ndev repl.js</code>, these are already available and this step is not required.</p>
 
 <p>Then we open the websocket connection and create the STOMP connection over it.</p>
 
-<pre><code class="language-javascript">var socket = new SockJS('http://localhost:7778/w/messages');
-var stompClient = Stomp.over(socket);
+<pre><code class="language-javascript">var socket = new sockjs('http://localhost:7778/w/messages');
+var stompClient = stomp.over(socket);
 </code></pre>
 
 <p>As mentioned above, websockets require a handshake, and we need to initiate it from the STOMP client.
@@ -688,13 +690,13 @@ and simply log the height of the new block in the console:</p>
 
 <p>Putting it all together, here is our code:</p>
 
-<pre><code class="language-javascript">// require libraries
-var Stomp=require('stompjs');
-var SockJS=require('sockjs-client');
+<pre><code class="language-javascript">// require libraries if not using repl.js script
+var stomp=require('stompjs');
+var sockjs=require('sockjs-client');
 // create socket to websocket URL
-var socket = new SockJS('http://localhost:7778/w/messages');
+var socket = new sockjs('http://localhost:7778/w/messages');
 // create a STOMP client over that websocket connection
-var stompClient = Stomp.over(socket);
+var stompClient = stomp.over(socket);
 // Define the callback function that we want to execute after connection.
 // Here we subscribe to new block notifications
 var callback=function(frame){
@@ -728,19 +730,18 @@ all uppercase and without hyphen). Here is an example illustrating the format of
 <p>With this information, it is easy to write our program that will log to the console the amount in microXEMs of transactions involving our
 account:</p>
 
-<pre><code class="language-javascript">var Stomp=require('stompjs');
-var SockJS=require('sockjs-client');
-socket = new SockJS('http://localhost:7778/w/messages');
-stompClient = Stomp.over(socket);
+<pre><code class="language-javascript">// require libraries if not using repl.js 
+var stomp=require('stompjs');
+var sockjs=require('sockjs-client');
+
+socket = new sockjs('http://localhost:7778/w/messages');
+stompClient = stomp.over(socket);
 stompClient.debug = undefined;
 stompClient.connect({}, function(frame) {
         stompClient.subscribe('/transactions/TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G', function(data) {
                              var body = JSON.parse(data.body);
                              console.log(body.transaction.amount);
                          });
-
-
-
 });
 </code></pre>
 
