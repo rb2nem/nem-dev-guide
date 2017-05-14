@@ -145,14 +145,15 @@ start_containers() {
 	
 	###############################################################################
 	Welcome to the NEM developer's guide Docker containers.
-	Two containers have been started, one running NIS ($nis_container), and the
+	By default, two containers have been started, 
+        one running NIS ($nis_container), and the
 	other ($tools_container) running mitmproxy.
 	
 	Only the tools container has ports mapped to your host:
-	- 7890 : to contact the NIS instance running in the nis container through mitmproxy
-	- 7778 : to contact the NIS instance' websocket port through mitmproxy
-	- 8081 : to view requests to NIS intercepted by mitmproxy
-	- 8082 : to view websocket requests to NIS intercepted by mitmproxy
+	- http://localhost:7890 : to contact the NIS instance running in the nis container through mitmproxy
+	- http://localhost:7778 : to contact the NIS instance' websocket port through mitmproxy
+	- http://localhost:8081 : to view requests to NIS intercepted by mitmproxy
+	- http://localhost:8082 : to view websocket requests to NIS intercepted by mitmproxy
 	
 	Run with --help to get an overview of flags and supported commands.
 
