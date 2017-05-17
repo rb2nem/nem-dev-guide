@@ -130,6 +130,17 @@ Offline transaction Unisig transaction  Description: Create and save to file a t
     </item>
     
     <item>
+      <title>Running a node</title>
+      <link>https://rb2nem.github.io/nem-dev-guide/95-running-node/</link>
+      <pubDate>Sat, 29 Apr 2017 15:02:00 +0200</pubDate>
+      
+      <guid>https://rb2nem.github.io/nem-dev-guide/95-running-node/</guid>
+      <description>Monitoring your node NIS listens on port 7890, so a first way to monitor your node is to check that your server listens on that port. As an example we will configure UptimeRobot to monitor that port. This should give you the required information to configure any other monitoring solution.
+It is possible to get information from a running nis by sending HTTP requests. Several URLS are handled.
+Status URLs will give JSON-formatted answers, and their meaning is detaild in the NIS API documentation.</description>
+    </item>
+    
+    <item>
       <title>References</title>
       <link>https://rb2nem.github.io/nem-dev-guide/99-references/</link>
       <pubDate>Sun, 26 Mar 2017 15:02:00 +0200</pubDate>
