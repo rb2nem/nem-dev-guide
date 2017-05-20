@@ -296,7 +296,14 @@
               
                   <div class="progress">
     <div class="wrapper">
-
+<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#creating-a-transaction">Creating a transaction</a></li>
+</ul></li>
+</ul>
+</nav>
     </div>
 </div>
 
@@ -308,6 +315,8 @@
                 
                 <h1>Transfer Transactions</h1>
                 
+
+
 
 <p>This chapter will cover transfer transactions, arguably one of the most command transactions on the NEM blockchain.</p>
 
@@ -355,6 +364,103 @@ Let&rsquo;s take a closer look at a transaction we have already seen in the <a h
         &quot;version&quot;: 1744830465
     }
 }
+</code></pre>
+
+<h2 id="creating-a-transaction">Creating a transaction</h2>
+
+<p>A transaction that is send to a NIS for inclusion in the blockchain needs to be signed.
+Although the process to follow is <a href="http://bob.nem.ninja/docs/#gathering-data-for-the-signature">very precisely described</a>,
+it is rather involved, and using a library including that feature is much easier and less error-prone.</p>
+
+<p>In this section we will use the nodejs <a href="https://github.com/QuantumMechanics/NEM-sdk">nem-sdk</a>.
+The procedure (using nem-sdk) to send a transaction includes 3 steps:
+* create a transferTransaction object
+* prepare the transaction for announcement on a specific network (mainnet, testnet or mijin).
+* send the prepared transaction to NIS for inclusion in the blockchain.</p>
+
+<p>The information required to generate a transfer transaction is:
+* the private key of the sender account
+* the address of the recipient, all uppercase and without hyphen
+* the amount of XEMs to be sent
+* the message sent with the transaction
+* the address and port on which the NIS instance we will send the transaction to is listening</p>
+
+<p>We define all these in variables:</p>
+
+<pre><code class="language-javascript">var privateKey = &quot;YOUR_ACCOUNT_PRIVATE_KEY&quot;;
+var recipient = &quot;TBCI2A67UQZAKCR6NS4JWAEICEIGEIM72G3MVW5S&quot;;
+var amount = 10;
+var message = &quot;dev guide test transaction&quot;;
+var nisURL = &quot;http://localhost&quot;;
+var nisPort = &quot;7890&quot;;
+</code></pre>
+
+<p>As we are running the containers accompanying this guide, we send our transaction on the testnet to
+the NIS instance that runs locally. The sender and recipient accounts are test accounts used for this guide.</p>
+
+<p>We first instanciate the endpoint, i.e. the variable identifying the NIS instance we will contact.
+The nem-sdk has this helper function <code>nem.model.objects.create</code> to instanciate model objects. In this case
+we instanciate an <code>endpoint</code> with the <code>nisURL</code>and <code>nisPort</code> defined previously:</p>
+
+<pre><code class="language-javascript">var endpoint = nem.model.objects.create(&quot;endpoint&quot;)(nisURL, nisPort);
+</code></pre>
+
+<p>Transactions of any type have at least some common information to be provided. This info is place in a <code>common</code> object that
+we instanciate. In our case, that object will hold the private key of the sender account under the <code>privateKey</code> property:</p>
+
+<pre><code class="language-javascript">var common = nem.model.objects.get(&quot;common&quot;);
+common.privateKey = privateKey;
+</code></pre>
+
+<p>We can now execute the three steps required to send a transaction.
+First a transferTransaction object is instanciate with the <code>recipient</code> address, the <code>amount</code> and the <code>message</code>:</p>
+
+<pre><code class="language-javascript">var transferTransaction = nem.model.objects.create(&quot;transferTransaction&quot;)(recipient, amount, message);
+</code></pre>
+
+<p>At that time we can prepare the transaction for sending. This will prepare the transaction to be sent to NIS, including:
+* setting the actual sender in case of a multisig transaction
+* translate the amount in microXEMs
+* set the due time for accepting the transaction
+* wrap the transaction in a multisig transaction if needed (see below for more details)</p>
+
+<p>The sender of the transaction is identified by its public key, derived from its private key. The network this transaction is
+destined for is needed to automatically set the due time.
+This explains the arguments passed to the prepare method: <code>common</code> for the sender&rsquo;s private key, <code>transferTransaction</code> for the
+transaction data, and <code>nem.model.network.data.testnet.id</code> for the network:</p>
+
+<pre><code class="language-javascript">var transactionEntity = nem.model.transactions.prepare(&quot;transferTransaction&quot;)(common, transferTransaction, nem.model.network.data.testnet.id)
+</code></pre>
+
+<p>Once the transaction is prepared, it can be signed by the initiating account (which requires its private key), and sent to
+ the endpoint we instanciated earlier:</p>
+
+<pre><code class="language-javascript">nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res) {console.log(&quot;done&quot;);});
+</code></pre>
+
+<p>If you don&rsquo;t count the variable initialisation, you have just 6 lines of code required to send a transaction to a NIS instance.
+Here is the complete code:</p>
+
+<pre><code class="language-javascript">// parameters initialisation
+var privateKey = &quot;YOUR_ACCOUNT_PRIVATE_KEY&quot;;
+var recipient = &quot;TBCI2A67UQZAKCR6NS4JWAEICEIGEIM72G3MVW5S&quot;;
+var amount = 10;
+var message = &quot;dev guide test transaction&quot;;
+var nisURL = &quot;http://localhost&quot;;
+var nisPort = &quot;7890&quot;;
+
+// endpoint initialisation
+var endpoint = nem.model.objects.create(&quot;endpoint&quot;)(nisURL, nisPort);
+// transaction common data initialisation
+var common = nem.model.objects.get(&quot;common&quot;);
+common.privateKey = privateKey;
+
+// create transfer transaction object
+var transferTransaction = nem.model.objects.create(&quot;transferTransaction&quot;)(recipient, amount, message);
+// prepare transaction
+var transactionEntity = nem.model.transactions.prepare(&quot;transferTransaction&quot;)(common, transferTransaction, nem.model.network.data.testnet.id)
+// sign and send to NIS
+nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res) {console.log(&quot;done&quot;);});
 </code></pre>
 
 
