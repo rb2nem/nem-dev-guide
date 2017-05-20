@@ -31,10 +31,10 @@ confirmations, it cannot be reversed. In real life, forks that are deeper than
 chain due to a bug in the code or an attack of some kind.
 ```
 
-As different actions can be taken, different transaction types have been define.
-Transaction types are grouped by kind. For example all multisig transaction are of the same kind, but
-still have a differrent type according to their effect. Some kinds have multiple transaction types, others
-only have one.
+As different actions can be taken, different transaction types have been defined.
+Transaction types are grouped by kind. For example all multisig transactions are of the same kind, but
+still have a differrent type according to their effect like adding a cosignatory or signing a pending multisig transaction.
+ Some kinds have multiple transaction types, others only have one.
 
 Each transaction kind has a base id, from which the id of their transaction types are derived. For example, the transfer kind has base id `0x100`,
 and a mosaic transfer type has id `0x101`. If one days it is decided that NEM needs a new transfer type, it would be assigned the id `0x102`, which
