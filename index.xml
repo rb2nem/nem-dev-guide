@@ -93,9 +93,8 @@ Once a transaction is initiated, it is still unconfirmed and thus not yet accept
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://rb2nem.github.io/nem-dev-guide/06-transaction-transfer/</guid>
-      <description>This chapter will cover transfer transactions, arguably one of the most command transactions on the NEM blockchain.
-As a reminder, the type of these transactions is 0x101, or 257. Let&amp;rsquo;s take a closer look at a transaction we have already seen in the blockchain requests section, when we validated an Apostile signature.
-Here is the data returned when we request a transaction by its hash, with each field explained:</description>
+      <description>This chapter will cover transfer transactions, arguably one of the most common transactions on the NEM blockchain.
+Unisig transactions We start with unisig transactions. These transactions are initiated from the account sending the funds, and can immediately be accepted in a block. As a reminder, the type of these transactions is 0x101, or 257. Let&amp;rsquo;s take a closer look at a transaction we have already seen in the blockchain requests section, when we validated an Apostile signature.</description>
     </item>
     
     <item>

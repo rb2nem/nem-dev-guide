@@ -300,7 +300,9 @@
 <ul>
 <li>
 <ul>
+<li><a href="#unisig-transactions">Unisig transactions</a></li>
 <li><a href="#creating-a-transaction">Creating a transaction</a></li>
+<li><a href="#multisig-transactions">Multisig transactions</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -318,9 +320,13 @@
 
 
 
-<p>This chapter will cover transfer transactions, arguably one of the most command transactions on the NEM blockchain.</p>
+<p>This chapter will cover transfer transactions, arguably one of the most common transactions on the NEM blockchain.</p>
 
-<p>As a reminder, the type of these transactions is <code>0x101</code>, or <code>257</code>.
+<h2 id="unisig-transactions">Unisig transactions</h2>
+
+<p>We start with unisig transactions. These transactions are initiated from the account sending the funds, and can immediately be accepted in
+a block.
+As a reminder, the type of these transactions is <code>0x101</code>, or <code>257</code>.
 Let&rsquo;s take a closer look at a transaction we have already seen in the <a href="https://rb2nem.github.io/nem-dev-guide/04-blockchain-requests#getting-a-transaction-by-its-hash-transaction-get">blockchain requests</a> section, when we validated an <a href="https://blog.nem.io/apostille/">Apostile</a> signature.</p>
 
 <p>Here is the data returned when we request a transaction by its hash, with each field explained:</p>
@@ -405,6 +411,14 @@ we instanciate an <code>endpoint</code> with the <code>nisURL</code>and <code>ni
 <pre><code class="language-javascript">var endpoint = nem.model.objects.create(&quot;endpoint&quot;)(nisURL, nisPort);
 </code></pre>
 
+<p>Taking a look at the <code>endpoint</code> created, we see it is simply an object holding the properties of the endpoint we want to
+connect to:</p>
+
+<pre><code class="language-javascript">&gt; endpoint
+{ host: 'http://localhost', port: '7890' }
+
+</code></pre>
+
 <p>Transactions of any type have at least some common information to be provided. This info is place in a <code>common</code> object that
 we instanciate. In our case, that object will hold the private key of the sender account under the <code>privateKey</code> property:</p>
 
@@ -412,11 +426,35 @@ we instanciate. In our case, that object will hold the private key of the sender
 common.privateKey = privateKey;
 </code></pre>
 
+<p>Here again we have a simple key-value mapping:</p>
+
+<pre><code class="language-javascript">&gt; common
+{ password: '',
+  privateKey: 'YOUR_ACCOUNT_PRIVATE_KEY' }
+
+</code></pre>
+
 <p>We can now execute the three steps required to send a transaction.
 First a transferTransaction object is instanciate with the <code>recipient</code> address, the <code>amount</code> and the <code>message</code>:</p>
 
 <pre><code class="language-javascript">var transferTransaction = nem.model.objects.create(&quot;transferTransaction&quot;)(recipient, amount, message);
 </code></pre>
+
+<p>The object created holds the information of the transaction as well as some characteristics of the transaction:</p>
+
+<pre><code class="language-javascript">&gt; transferTransaction
+{ amount: 10,
+  recipient: 'TBCI2A67UQZAKCR6NS4JWAEICEIGEIM72G3MVW5S',
+  recipientPublicKey: '',
+  isMultisig: false,
+  multisigAccount: '',
+  message: 'dev guide test transaction',
+  isEncrypted: false,
+  mosaics: [] }
+</code></pre>
+
+<p>In addition to the amount, recipient and message, it also specifies if this is a multisig transaction, and if mosaics are
+exchanged.</p>
 
 <p>At that time we can prepare the transaction for sending. This will prepare the transaction to be sent to NIS, including:
 * setting the actual sender in case of a multisig transaction
@@ -432,13 +470,67 @@ transaction data, and <code>nem.model.network.data.testnet.id</code> for the net
 <pre><code class="language-javascript">var transactionEntity = nem.model.transactions.prepare(&quot;transferTransaction&quot;)(common, transferTransaction, nem.model.network.data.testnet.id)
 </code></pre>
 
+<p>Let&rsquo;s take a look at the transactionEntity:</p>
+
+<pre><code class="language-javascript">&gt; transactionEntity
+{ type: 257,
+  version: -1744830463,
+  signer: '4fe5efd97360bc8a32ec105d419222eeb714e6d06fd8b895a5eedda2b0edf931',
+  timeStamp: 68284025,
+  deadline: 68287625,
+  recipient: 'TBCI2A67UQZAKCR6NS4JWAEICEIGEIM72G3MVW5S',
+  amount: 10000000,
+  fee: 2000000,
+  message: 
+   { type: 1,
+     payload: '6465762067756964652074657374207472616e73616374696f6e' },
+  mosaics: null }
+</code></pre>
+
+<p>We see that a complete transaction object recognised by the NEM network has been constructed:
+* amount and <a href="http://bob.nem.ninja/docs/#transaction-fees">fees</a> are expressed in microXEMs
+* the transaction type and version are set
+* the transaction timestamp and its deadline are set.
+* the message has also been <a href="https://github.com/QuantumMechanics/NEM-sdk/blob/master/src/model/transactions.js#L186">prepared</a>. Type 1 indicates it is a message that has not been encrypted.</p>
+
 <p>Once the transaction is prepared, it can be signed by the initiating account (which requires its private key), and sent to
  the endpoint we instanciated earlier:</p>
 
 <pre><code class="language-javascript">nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res) {console.log(&quot;done&quot;);});
 </code></pre>
 
-<p>If you don&rsquo;t count the variable initialisation, you have just 6 lines of code required to send a transaction to a NIS instance.
+<p>If you use this guide&rsquo;s docker containers, you can inspect the POST request sent to the NIS server by accessing the mitmproxy interface
+at <a href="http://localhost:8081">http://localhost:8081</a>. Here is a screenshot:</p>
+
+
+<figure >
+    
+        <img src="https://rb2nem.github.io/nem-dev-guide/images/transaction_unisig_post.png" />
+    
+    
+    <figcaption>
+        <h4>Unisig transaction sent to NIS</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>We see that the payload is a JSON object with fields data and signature. The <code>data</code> field is the serialised trnsaction, and the NIS API documentation
+explains <a href="http://bob.nem.ninja/docs/#creating-a-signed-transaction">how to generated the signature</a>.</p>
+
+<div class="notices tip" ><p>If you want to take a look at the internals of nem-sdk, here is some details on the serialisation and signature of transactions.
+The serialisation is done with a call to <code>nem.utils.serialization.serializeTransaction(transactionEntity);</code> and the serialised transaction
+is then encode with a call to <code>nem.utils.convert.ua2hex(serialized)</code>.
+The signature is applied to the serialised transaction.</p>
+</div>
+
+
+<p>When our transaction has been received by NIS, it is in state unconfirmed, until it it included in a block.</p>
+
+<p>As conclusion, let&rsquo;s look at the complete code. If you don&rsquo;t count the variable
+initialisation, you have just 6 lines of code required to send a transaction to
+a NIS instance.
 Here is the complete code:</p>
 
 <pre><code class="language-javascript">// parameters initialisation
@@ -459,6 +551,150 @@ common.privateKey = privateKey;
 var transferTransaction = nem.model.objects.create(&quot;transferTransaction&quot;)(recipient, amount, message);
 // prepare transaction
 var transactionEntity = nem.model.transactions.prepare(&quot;transferTransaction&quot;)(common, transferTransaction, nem.model.network.data.testnet.id)
+// sign and send to NIS
+nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res) {console.log(&quot;done&quot;);});
+</code></pre>
+
+<h2 id="multisig-transactions">Multisig transactions</h2>
+
+<p>M-of-N multisig transactions are not initiated by the account sending the funds (let&rsquo;s call it the actual sender). The transaction is initiate by
+one of the N accounts that have been indicated as cosignatories of the account. The transaction stay unconfirmed as long as less than M cosignatory
+accounts have signed it. Once the transaction has been signed by M cosignatories, it can be included in a block.</p>
+
+<p>As a reminder, the type of a multisig transfer transaction is <code>0x1004</code> or <code>4100</code>.
+When a transfer has to be done from a multisig account, a normal transfer transaction is wrapped in a multisig transaction. Let&rsquo;s see how this work.</p>
+
+<p>Initiating multisig transactions is very similar to initiating a unisig transaction. We start by defining variables we will use. Only one
+additional variable is defined: <code>actual_sender</code>, which is a javascript object holging the public key of the multisig account (the actual sender).</p>
+
+<pre><code class="language-javascript">var privateKey = &quot;YOU_SIGNER_PRIVATE_KEY&quot;;
+var recipient = &quot;TBCI2A67UQZAKCR6NS4JWAEICEIGEIM72G3MVW5S&quot;;
+var amount = 10;
+var message = &quot;dev guide test multisig transaction&quot;;
+var nisURL = &quot;http://localhost&quot;;
+var nisPort = &quot;7890&quot;;
+var actual_sender={publicKey: &quot;e3775e0cbab73d014b0309f81890455bf3c8df1325f2de1aa6a800951220d611&quot;}
+</code></pre>
+
+<p>Then, exactly as for the unisig transaction, we initialise the endpoint defining which NIS we will use,
+we initialise the part common to all transactions, and we build a transfer transaction object.</p>
+
+<pre><code class="language-javascript">var endpoint = nem.model.objects.create(&quot;endpoint&quot;)(nisURL, nisPort);
+var common = nem.model.objects.get(&quot;common&quot;);
+common.privateKey = privateKey;
+var transferTransaction = nem.model.objects.create(&quot;transferTransaction&quot;)(recipient, amount, message);
+</code></pre>
+
+<p>At this time we have some differences from the unisig transaction. If we look at the transferTransaction object:</p>
+
+<pre><code class="language-javascript">&gt; transferTransaction
+{ amount: 10,
+  recipient: 'TBCI2A67UQZAKCR6NS4JWAEICEIGEIM72G3MVW5S',
+  recipientPublicKey: '',
+  isMultisig: false,
+  multisigAccount: '',
+  message: 'dev guide test multisig transaction',
+  isEncrypted: false,
+  mosaics: [] }
+</code></pre>
+
+<p>we see that by default it is not a multisig transaction (<code>isMultisig: false</code>). To mark this as a multisig transaction, we
+have to assign true to the <code>isMultisig</code> field, and add information about the actual sender under the key <code>multisigAccount</code>.
+This is done like this:</p>
+
+<pre><code class="language-javascript">transferTransaction.isMultisig= true;
+transferTransaction.multisigAccount=actual_sender
+</code></pre>
+
+<p>These two lines are the only changes necessary from the unisig code to initiate a multisig transaction!
+Our transferTransaction object then looks like this:</p>
+
+<pre><code class="language-javascript">&gt; transferTransaction
+{ amount: 10,
+  recipient: 'TBCI2A67UQZAKCR6NS4JWAEICEIGEIM72G3MVW5S',
+  recipientPublicKey: '',
+  isMultisig: true,
+  multisigAccount: { publicKey: 'e3775e0cbab73d014b0309f81890455bf3c8df1325f2de1aa6a800951220d611' },
+  message: 'dev guide test multisig transaction',
+  isEncrypted: false,
+  mosaics: [] }
+</code></pre>
+
+<p>Then, like for the unisig transaction, we prepare the transaction to get a transactionEntity:</p>
+
+<pre><code class="language-javascript">var transactionEntity = nem.model.transactions.prepare(&quot;transferTransaction&quot;)(common, transferTransaction, nem.model.network.data.testnet.id)
+</code></pre>
+
+<p>This object looks like this:</p>
+
+<pre><code class="language-javascript">&gt; transactionEntity
+{ type: 4100,
+  version: -1744830463,
+  signer: '61a2896696fef452d001299f279567aacc79706c2b2c899f9dec70e0b92eb6b6',
+  timeStamp: 68309713,
+  deadline: 68313313,
+  fee: undefined,
+  otherTrans: 
+   { type: 257,
+     version: -1744830463,
+     signer: 'e3775e0cbab73d014b0309f81890455bf3c8df1325f2de1aa6a800951220d611',
+     timeStamp: 68309713,
+     deadline: 68313313,
+     recipient: 'TBCI2A67UQZAKCR6NS4JWAEICEIGEIM72G3MVW5S',
+     amount: 10000000,
+     fee: 3000000,
+     message: 
+      { type: 1,
+        payload: '6465762067756964652074657374206d756c7469736967207472616e73616374696f6e' },
+     mosaics: null } }
+</code></pre>
+
+<p>We observer that it has type 4100, and includes a field <code>otherTrans</code>, which is of type 257. This shows that
+the transfer transaction (of type 257) is wrapped in a multisig transaction (of type 4100).</p>
+
+<p>The fee of the outer transaction is null, which is a problem that will be fixed in nem-sdk. For now, we have to set it
+manually if it is null. The fee of a multisig transaction is 6 XEMs per cosignatory. The example account is a 1-of-2 account,
+so 6 XEMS are sufficient, but remember that fees are set in microXEMs, so we set the value to 6000000:</p>
+
+<pre><code class="language-javascript">transactionEntity.fee=6000000
+</code></pre>
+
+<div class="notices warning" ><p><strong>Be very causious when setting fees manually</strong>. An error can easily occur, and you might end up transferring millions of XEMs
+when you wanter to transfer only a couple of XEMs&hellip;. Some users of the NanoWallet have set the amount to transfer as the fee,
+making a similar error in your code might be catastrophic. Always double check and validate your code in the testnet first!!!</p>
+</div>
+
+
+<p>With this fix in place, we can now sign and send the transaction to NIS:</p>
+
+<pre><code class="language-javascript">nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res) {console.log(&quot;done&quot;);});
+</code></pre>
+
+<pre><code class="language-javascript">// parameters initialisation
+var privateKey = &quot;YOU_SIGNER_PRIVATE_KEY&quot;;
+var recipient = &quot;TBCI2A67UQZAKCR6NS4JWAEICEIGEIM72G3MVW5S&quot;;
+var amount = 10;
+var message = &quot;dev guide test multisig transaction&quot;;
+var nisURL = &quot;http://localhost&quot;;
+var nisPort = &quot;7890&quot;;
+var actual_sender={publicKey: &quot;e3775e0cbab73d014b0309f81890455bf3c8df1325f2de1aa6a800951220d611&quot;}
+
+// endpoint initialisation
+var endpoint = nem.model.objects.create(&quot;endpoint&quot;)(nisURL, nisPort);
+// transaction common data initialisation
+var common = nem.model.objects.get(&quot;common&quot;);
+common.privateKey = privateKey;
+
+// create transfer transaction object
+var transferTransaction = nem.model.objects.create(&quot;transferTransaction&quot;)(recipient, amount, message);
+transferTransaction.isMultisig= true;
+transferTransaction.multisigAccount=actual_sender
+
+
+// prepare transaction
+var transactionEntity = nem.model.transactions.prepare(&quot;transferTransaction&quot;)(common, transferTransaction, nem.model.network.data.testnet.id)
+// temporary nem-sdk fix
+transactionEntity.fee=6000000
 // sign and send to NIS
 nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res) {console.log(&quot;done&quot;);});
 </code></pre>
