@@ -59,8 +59,6 @@ Here is the data returned when we request a transaction by its hash, with each f
 ```
 ### Using nem-sdk
 
-## Creating a transaction
-
 A transaction that is send to a NIS for inclusion in the blockchain needs to be signed.
 Although the process to follow is [very precisely described] (http://bob.nem.ninja/docs/#gathering-data-for-the-signature),
 it is rather involved, and using a library including that feature is much easier and less error-prone.
