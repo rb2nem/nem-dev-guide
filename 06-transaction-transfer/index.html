@@ -300,8 +300,14 @@
 <ul>
 <li>
 <ul>
-<li><a href="#unisig-transactions">Unisig transactions</a></li>
-<li><a href="#creating-a-transaction">Creating a transaction</a></li>
+<li><a href="#unisig-transactions">Unisig transactions</a>
+<ul>
+<li><a href="#using-nem-sdk">Using nem-sdk</a></li>
+</ul></li>
+<li><a href="#creating-a-transaction">Creating a transaction</a>
+<ul>
+<li><a href="#from-another-language">From another language</a></li>
+</ul></li>
 <li><a href="#multisig-transactions">Multisig transactions</a></li>
 </ul></li>
 </ul>
@@ -371,6 +377,8 @@ Let&rsquo;s take a closer look at a transaction we have already seen in the <a h
     }
 }
 </code></pre>
+
+<h3 id="using-nem-sdk">Using nem-sdk</h3>
 
 <h2 id="creating-a-transaction">Creating a transaction</h2>
 
@@ -553,6 +561,104 @@ var transferTransaction = nem.model.objects.create(&quot;transferTransaction&quo
 var transactionEntity = nem.model.transactions.prepare(&quot;transferTransaction&quot;)(common, transferTransaction, nem.model.network.data.testnet.id)
 // sign and send to NIS
 nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res) {console.log(&quot;done&quot;);});
+</code></pre>
+
+<h3 id="from-another-language">From another language</h3>
+
+<p>If you use another language that doesn&rsquo;t let you use nem-sdk, You can easily build the JSON objects to define transaction. However,
+you need to sign the transactions before they are sent to a NIS instance. To do that you have two solutions.</p>
+
+<p>The first one is to
+implement the signing algorithm yourself in your preferred code. This offers the best integration with your language and tools, and
+although it is very instructive and will give you a good idea of the inner workings of NEM, it is not straight-forward and time intensive.</p>
+
+<p>The second one, which is easier and will be covered in this section, is to write a small signing server with Nodejs, and ask it to sign
+transactions you build in your language. The way you communicate with the Nodejs signing server is your choice to make, but in this example
+we will use <a href="http://www.zerorpc.io/">zerorpc</a> from a python client. But you could possibly choose a completely different solution, such as
+<a href="https://redis.io/commands/rpoplpush">a Redis server to implement a work queue</a>.</p>
+
+<p>Here are the steps that are needed when preparing a transaction with nem-sdk:</p>
+
+<pre><code class="language-javascript">        var transactionEntity = nem.model.transactions.prepare(&quot;transferTransaction&quot;)(common, tx, network.id);
+        var kp = nem.crypto.keyPair.create(common.privateKey);
+        var serialized = nem.utils.serialization.serializeTransaction(transactionEntity);
+        var signature = kp.sign(serialized);
+</code></pre>
+
+<p>The steps are:</p>
+
+<ul>
+<li>prepare the JSON object with the transaction data</li>
+<li>get the private key to be used for signing</li>
+<li>serialise the transaction</li>
+<li>sign the serialised transaction</li>
+</ul>
+
+<p>We can thus develop a small server that will expose a sign method, taking as argument the <code>common</code>, <code>tx</code> and network name for which the transaction is destined, and returning the signed transaction JSON object ready for sending to a NIS instance.
+Here it is:</p>
+
+<pre><code class="language-javascript">var zerorpc = require(&quot;zerorpc&quot;);
+var server = new zerorpc.Server({
+    sign: function(_tx,_common,net_name, reply) {
+        // parse arguments to get objects
+        var common=JSON.parse(_common);
+        var tx=JSON.parse(_tx)
+        // get network object corresponding to name passed as argument, eg &quot;testnet&quot;
+        var network=nem.model.network.data[net_name]
+
+        // build the transaction object
+        var transactionEntity = nem.model.transactions.prepare(&quot;transferTransaction&quot;)(common, tx, network.id);
+        // initialise keypair object based on private key
+        var kp = nem.crypto.keyPair.create(common.privateKey);
+        // serialise transaction object
+        var serialized = nem.utils.serialization.serializeTransaction(transactionEntity);
+        // sign serialised transaction
+        var signature = kp.sign(serialized);
+
+        // build result object
+        var result = { 
+                'data': nem.utils.convert.ua2hex(serialized),
+                'signature': signature.toString()
+        };
+        
+        // send response to client
+        reply(null, result);
+    }   
+});             
+server.bind(&quot;tcp://0.0.0.0:4242&quot;);
+</code></pre>
+
+<div class="notices note" ><p>In the example, the client is passing the private key to be used for signing to the server. An alternative could be to defined to private key
+at the side of the signing server. You could also add limitations on the transactions that are signed, such as refusing to sign transactions
+for higher than accepted amounts.</p>
+</div>
+
+
+<p>The client is developed in python, and is equally simple. It builds transaction objects, converts them to JSON formatted strings, and
+asks the server to sign it. The response that is received is a JSON object ready to be sent to a NIS instance. Here is the complete
+client code:</p>
+
+<pre><code class="language-python">import zerorpc
+import requests
+
+// initialise client
+c = zerorpc.Client()
+c.connect(&quot;tcp://127.0.0.1:4242&quot;)
+
+// initialise transaction and signer data
+tx={ &quot;amount&quot;: 11, &quot;recipient&quot;: &quot;TAPWFJHCGV3GL3CZEERB3IGXPMBWNGGEZKAVPNFB&quot;, &quot;recipientPublicKey&quot;: &quot;&quot;, &quot;isMultisig&quot;: False, &quot;multisigAccount&quot;: &quot;&quot;, &quot;message&quot;: &quot;msg&quot;, &quot;isEncrypted&quot;: False, &quot;mosaics&quot;: [] }
+common={ &quot;password&quot;: &quot;&quot;, &quot;privateKey&quot;: &quot;YOU_PRIVATE_KEY&quot; }
+
+// convert to json strings
+str_common=json.dumps(common)
+str_tx=json.dumps(tx)
+
+// call remote procedure, passing string arguments
+signed = c.sign(str_tx, str_common, &quot;testnet&quot;)
+
+// post signed transaction to a NIS instance
+url=&quot;http://localhost:7890/transaction/announce&quot;
+response = requests.post(url, json=signed)
 </code></pre>
 
 <h2 id="multisig-transactions">Multisig transactions</h2>
