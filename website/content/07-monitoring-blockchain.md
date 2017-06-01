@@ -328,7 +328,8 @@ stompClient.connect({}, callback );
 
 This will notify your program when a new block is available, but you would still need to go and retrieve the block to check
 if it includes transactions involving your account. But we can do better! We can ask to be notified of new transactions involving
-a specific account. This is done by subscribing to the channel `/transactions/$ADDRESS` (replace $ADDRESS by the account's address,
+a specific account. This is done by subscribing to the channel `/w/api/account/subscribe` with the payload
+`"{'account':'$ADDRESS'}"` (replace $ADDRESS by the account's address,
 all uppercase and without hyphen). Here is an example illustrating the format of the frame you receive:
 
 ``` json
@@ -347,7 +348,6 @@ all uppercase and without hyphen). Here is an example illustrating the format of
 With this information, it is easy to write our program that will log to the console the amount in microXEMs of transactions involving our 
 account:
 ``` javascript
-// require libraries if not using repl.js 
 var stomp=require('stompjs');
 var sockjs=require('sockjs-client');
 
@@ -355,11 +355,16 @@ socket = new sockjs('http://localhost:7778/w/messages');
 stompClient = stomp.over(socket);
 stompClient.debug = undefined;
 stompClient.connect({}, function(frame) {
-        stompClient.subscribe('/transactions/TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G', function(data) {
-                             var body = JSON.parse(data.body);
-                             console.log(body.transaction.amount);
-                         });
+        stompClient.send("/w/api/account/subscribe", {}, "{'account':'" + "TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G" + "'}");
+
+        stompClient.subscribe('/w/api/account/subscribe', 
+                              function(data) {
+                                  var body = JSON.parse(data.body);
+                                  console.log(body.transaction.amount); },
+                              "{'account':'" + "TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G" + "'}"
+        );
 });
+
 ```
 You might want to check if this is an incoming our outgoing transaction. But that's left as an exercice for the reader ;-)
 
