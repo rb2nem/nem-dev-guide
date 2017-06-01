@@ -673,7 +673,7 @@ var sockjs=require('sockjs-client');
 
 <p>Then we open the websocket connection and create the STOMP connection over it.</p>
 
-<pre><code class="language-javascript">var socket = new sockjs('http://localhost:7778/w/messages');
+<pre><code class="language-javascript">socket = new sockjs('http://localhost:7778/w/messages');
 var stompClient = stomp.over(socket);
 </code></pre>
 
@@ -702,7 +702,7 @@ and simply log the height of the new block in the console:</p>
 var stomp=require('stompjs');
 var sockjs=require('sockjs-client');
 // create socket to websocket URL
-var socket = new sockjs('http://localhost:7778/w/messages');
+socket = new sockjs('http://localhost:7778/w/messages');
 // create a STOMP client over that websocket connection
 var stompClient = stomp.over(socket);
 // Define the callback function that we want to execute after connection.
