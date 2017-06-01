@@ -280,7 +280,7 @@ Note that if you use the repljs script with `ndev repl.js`, these are already av
 
 Then we open the websocket connection and create the STOMP connection over it.
 ``` javascript
-var socket = new sockjs('http://localhost:7778/w/messages');
+socket = new sockjs('http://localhost:7778/w/messages');
 var stompClient = stomp.over(socket);
 ```
 As mentioned above, websockets require a handshake, and we need to initiate it from the STOMP client.
@@ -310,7 +310,7 @@ Putting it all together, here is our code:
 var stomp=require('stompjs');
 var sockjs=require('sockjs-client');
 // create socket to websocket URL
-var socket = new sockjs('http://localhost:7778/w/messages');
+socket = new sockjs('http://localhost:7778/w/messages');
 // create a STOMP client over that websocket connection
 var stompClient = stomp.over(socket);
 // Define the callback function that we want to execute after connection.
