@@ -646,17 +646,19 @@ messages. If your language provides libraries to communicate with STOMP over web
 Just note that Websocksets require a handshake, which is visible at the stomp client level. If you are interested in more details,
 <a href="http://jmesnil.net/stomp-websocket/doc/#requirements">a good explanation is available on the web</a>.</p>
 
-<p>We will work in javascript, for which the libraries sockjs-client and stompjs cover our needs. These can be installed with</p>
+<p>We will work in javascript, for which the library stompjs covers our needs. These can be installed with</p>
 
-<pre><code>npm install -g sockjs-client
-npm install -g stompjs
+<pre><code>npm install -g stompjs
 </code></pre>
+
+<p>You might find examples using SockJS, and this guide started by using it. However, due to problems with SockJS
+(such as code working one day but not the day after), we switched to a solution using only stompjs.</p>
 
 <p>The implementation is quite straightforward when you know how and to which messages you need to subscribe.
 We will work in the nodejs REPL, which you can start with <code>node</code>, or if you use the containers of this guide, with
 <code>./ndev repl.js</code>.</p>
 
-<p>The URL you need to connect to for websockets is <code>http://$NIS:7778/w/messages</code> (replace $NIS with the IP or hostname of the NIS
+<p>The URL you need to connect to for websockets is <code>http://$NIS:7778/w/messages/websocket</code> (replace $NIS with the IP or hostname of the NIS
 you want to connect to). If you run in the tools container, you can use <code>localhost</code>.</p>
 
 <p>To be notified of new blocks, you subscribe to <code>/blocks/new</code>. The body of the notification is simply the height of
@@ -666,15 +668,13 @@ the new block.</p>
 First we require the libraries:</p>
 
 <pre><code class="language-javascript">var stomp=require('stompjs');
-var sockjs=require('sockjs-client');
 </code></pre>
 
 <p>Note that if you use the repljs script with <code>ndev repl.js</code>, these are already available and this step is not required.</p>
 
 <p>Then we open the websocket connection and create the STOMP connection over it.</p>
 
-<pre><code class="language-javascript">socket = new sockjs('http://localhost:7778/w/messages');
-var stompClient = stomp.over(socket);
+<pre><code class="language-javascript">var stompClient = stomp.overWS('ws://localhost:7778/w/messages/websocket');
 </code></pre>
 
 <p>As mentioned above, websockets require a handshake, and we need to initiate it from the STOMP client.
@@ -700,11 +700,8 @@ and simply log the height of the new block in the console:</p>
 
 <pre><code class="language-javascript">// require libraries if not using repl.js script
 var stomp=require('stompjs');
-var sockjs=require('sockjs-client');
-// create socket to websocket URL
-socket = new sockjs('http://localhost:7778/w/messages');
 // create a STOMP client over that websocket connection
-var stompClient = stomp.over(socket);
+var stompClient = stomp.overWS('ws://localhost:7778/w/messages/websocket');
 // Define the callback function that we want to execute after connection.
 // Here we subscribe to new block notifications
 var callback=function(frame){
@@ -739,21 +736,15 @@ all uppercase and without hyphen). Here is an example illustrating the format of
 <p>With this information, it is easy to write our program that will log to the console the amount in microXEMs of transactions involving our
 account:</p>
 
-<pre><code class="language-javascript">var stomp=require('stompjs');
-var sockjs=require('sockjs-client');
+<pre><code class="language-javascript">stomp=require('stompjs');
 
-socket = new sockjs('http://localhost:7778/w/messages');
-stompClient = stomp.over(socket);
+stompClient = stomp.overWS('ws://localhost:7778/w/messages/websocket');
 stompClient.debug = undefined;
 stompClient.connect({}, function(frame) {
-        stompClient.send(&quot;/w/api/account/subscribe&quot;, {}, &quot;{'account':'&quot; + &quot;TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G&quot; + &quot;'}&quot;);
-
-        stompClient.subscribe('/w/api/account/subscribe', 
+        stompClient.subscribe('/unconfirmed/TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G', 
                               function(data) {
                                   var body = JSON.parse(data.body);
-                                  console.log(body.transaction.amount); },
-                              &quot;{'account':'&quot; + &quot;TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G&quot; + &quot;'}&quot;
-        );
+                                  console.log(body.transaction.amount); }        );
 });
 
 </code></pre>
