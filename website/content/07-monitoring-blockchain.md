@@ -255,16 +255,18 @@ messages. If your language provides libraries to communicate with STOMP over web
 Just note that Websocksets require a handshake, which is visible at the stomp client level. If you are interested in more details,
 [a good explanation is available on the web](http://jmesnil.net/stomp-websocket/doc/#requirements).
 
-We will work in javascript, for which the libraries sockjs-client and stompjs cover our needs. These can be installed with
+We will work in javascript, for which the library stompjs covers our needs. These can be installed with
 ```
-npm install -g sockjs-client
 npm install -g stompjs
 ```
+You might find examples using SockJS, and this guide started by using it. However, due to problems with SockJS
+(such as code working one day but not the day after), we switched to a solution using only stompjs.
+
 The implementation is quite straightforward when you know how and to which messages you need to subscribe. 
 We will work in the nodejs REPL, which you can start with `node`, or if you use the containers of this guide, with 
 `./ndev repl.js`.
 
-The URL you need to connect to for websockets is `http://$NIS:7778/w/messages` (replace $NIS with the IP or hostname of the NIS
+The URL you need to connect to for websockets is `http://$NIS:7778/w/messages/websocket` (replace $NIS with the IP or hostname of the NIS
 you want to connect to). If you run in the tools container, you can use `localhost`.
 
 To be notified of new blocks, you subscribe to `/blocks/new`. The body of the notification is simply the height of 
@@ -274,14 +276,12 @@ Now that we have all information, we can take a closer look at the implementatio
 First we require the libraries:
 ``` javascript
 var stomp=require('stompjs');
-var sockjs=require('sockjs-client');
 ```
 Note that if you use the repljs script with `ndev repl.js`, these are already available and this step is not required.
 
 Then we open the websocket connection and create the STOMP connection over it.
 ``` javascript
-socket = new sockjs('http://localhost:7778/w/messages');
-var stompClient = stomp.over(socket);
+var stompClient = stomp.overWS('ws://localhost:7778/w/messages/websocket');
 ```
 As mentioned above, websockets require a handshake, and we need to initiate it from the STOMP client.
 When the connection is established, it will trigger a callback passed as second argument to the `connect` function:
@@ -308,11 +308,8 @@ Putting it all together, here is our code:
 ``` javascript
 // require libraries if not using repl.js script
 var stomp=require('stompjs');
-var sockjs=require('sockjs-client');
-// create socket to websocket URL
-socket = new sockjs('http://localhost:7778/w/messages');
 // create a STOMP client over that websocket connection
-var stompClient = stomp.over(socket);
+var stompClient = stomp.overWS('ws://localhost:7778/w/messages/websocket');
 // Define the callback function that we want to execute after connection.
 // Here we subscribe to new block notifications
 var callback=function(frame){
@@ -348,21 +345,15 @@ all uppercase and without hyphen). Here is an example illustrating the format of
 With this information, it is easy to write our program that will log to the console the amount in microXEMs of transactions involving our 
 account:
 ``` javascript
-var stomp=require('stompjs');
-var sockjs=require('sockjs-client');
+stomp=require('stompjs');
 
-socket = new sockjs('http://localhost:7778/w/messages');
-stompClient = stomp.over(socket);
+stompClient = stomp.overWS('ws://localhost:7778/w/messages/websocket');
 stompClient.debug = undefined;
 stompClient.connect({}, function(frame) {
-        stompClient.send("/w/api/account/subscribe", {}, "{'account':'" + "TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G" + "'}");
-
-        stompClient.subscribe('/w/api/account/subscribe', 
+        stompClient.subscribe('/unconfirmed/TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G', 
                               function(data) {
                                   var body = JSON.parse(data.body);
-                                  console.log(body.transaction.amount); },
-                              "{'account':'" + "TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G" + "'}"
-        );
+                                  console.log(body.transaction.amount); }        );
 });
 
 ```
