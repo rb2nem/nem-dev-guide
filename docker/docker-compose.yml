@@ -4,7 +4,7 @@ services:
 #    build: "nis"
     image: "rb2nem/nem-dev-guide:nis"
     volumes:
-     - ${persistent_location}:/var/lib/nem
+     - ${persistent_location}:/home/nem
   nemdevtools:
 #    build: "tools"
     image: "rb2nem/nem-dev-guide:tools"

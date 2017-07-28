@@ -4,10 +4,10 @@ set -eu
 #start nis by default
 with_nis=1
 
-if [[ ! -f /opt/nem/package/nis/config-user.properties ]] ; then
+if [[ ! -f /package/nis/config-user.properties ]] ; then
 	key=$(< /dev/urandom tr -dc a-f0-9 | head -c64)
 	name=developer$(< /dev/urandom tr -dc a-f0-9 | head -c16)
-	cat >/opt/nem/package/nis/config-user.properties <<-EOF
+	cat >/package/nis/config-user.properties <<-EOF
 	nis.bootName = $name
 	nis.bootKey = $key
 	nem.network = testnet
@@ -16,7 +16,7 @@ fi
 
 
 # set owner nem, in case it is mounted from the host
-chown -R nem /var/lib/nem
+chown -R nem /home/nem/nem
 # cleanup old traces
 rm -rf /var/lib/nem/traces
 mkdir -p /var/lib/nem/traces

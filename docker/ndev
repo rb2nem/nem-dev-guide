@@ -145,6 +145,7 @@ check_compose_file() {
 start_containers() {
 # start docker containers if needed, possibly with nis
     if [[ -z "$nis_container" ]] ; then 
+      mkdir -p $persistent_location/nem
       docker-compose up -d
       [[ $with_nis -eq 1 ]] && sleep 1 && docker exec -it docker_nemdevnis_1 supervisorctl start nis ;
       # update running containers variable after starting containers

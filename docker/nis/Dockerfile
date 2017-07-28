@@ -1,13 +1,12 @@
-from ubuntu:16.10
+from rb2nem/nis
 
-RUN apt update
-RUN apt-get install -y apt-transport-https curl openjdk-8-jre-headless httpie supervisor jq net-tools nano less telnet
-RUN curl  https://rb2nem.github.io/nem-nis-apt/pub.key | apt-key add -
-RUN echo "deb https://rb2nem.github.io/nem-nis-apt/ xenial main" > /etc/apt/sources.list.d/nem-nis.list
-RUN apt update
-RUN apt-get install -y nem-nis
+RUN dnf install -y curl httpie jq net-tools nano less telnet tcpdump
 COPY ./container_files/supervisord.conf /etc/
-RUN apt-get install -y tcpdump
 COPY ./container_files/start.sh /usr/local/bin/start.sh
 COPY ./container_files/bash_aliases /root/.bash_aliases
+
+RUN rm -r /package && curl https://bob.nem.ninja/beta-testnet/nis-ncc-0.6.92.tgz -o /nis.tgz &&\
+    tar xvf nis.tgz
+
+
 ENTRYPOINT ["/usr/local/bin/start.sh"]
