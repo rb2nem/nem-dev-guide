@@ -47,6 +47,7 @@ usage() {
 
 	Command is a command available in the container. 
 	Custom commands are also available:
+	    ts-node : opens a Typescript nodejs repl in which you can load nem-library
 	    repl.js : opens a nodejs repl with nem-sdk loaded and available under the variable 'nem'
 	    mitm    : opens a mitmproxy console in your terminal, listening on port 7892
 
@@ -120,6 +121,9 @@ handle_config_file() {
 # makes sure we have consistent data with cmd
 handle_command() {
 	case $1 in
+	  ts-node)
+	    container="tools"
+	    ;;
 	  repl.js)
 	    container="tools"
 	    ;;

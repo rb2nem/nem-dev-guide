@@ -23,6 +23,7 @@ Here are links that you most certainly will be interested in as a developer.
 ### Code and Libraries
 * [Official NemProject's github](https://github.com/NemProject)
 * [nem-sdk](https://github.com/QuantumMechanics/NEM-sdk), a javascript/nodejs sdk for nem and the browser.
+* [nem-library](https://nemlibrary.com), an abstraction for NEM Blockchain using a Reactive approach for creating Blockchain applications.
 * [nem-api](https://github.com/nikhiljha/nem-api), a javascript API Wrapper for the NIS Layer of the NEM Blockchain Platform.
 * [nem-apps](https://github.com/NEMChina/nem-apps), a java library to initiate, co-sign and monitor transactions
 * [csharp2nem](https://github.com/NemProject/csharp2nem), a C# library

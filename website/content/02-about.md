@@ -46,6 +46,10 @@ You can pass POST data on the command line as key-value pairs. For string value,
 
 [nem-sdk](https://github.com/QuantumMechanics/NEM-sdk) is a javascript Nem library.
 
+### Typescript and nem-library
+
+[nem-library](https://nemlibrary.com/) is an abstraction for NEM Blockchain using a Reactive approach for creating Blockchain applications. It is included in the tools container. Just open the Typescript repl with `./ndev ts-node`.
+
 
 ### jq
 
