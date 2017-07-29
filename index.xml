@@ -145,7 +145,7 @@ Status URLs will give JSON-formatted answers, and their meaning is detaild in th
       
       <guid>https://rb2nem.github.io/nem-dev-guide/99-references/</guid>
       <description>Here are links that you most certainly will be interested in as a developer.
-Papers  NEM technical paper Apostille white paper Catapult white paper  Documentation  NIS API Nem&amp;rsquo;s Github Bitcoin and Cryptocurrency Technologies  Code and Libraries  Official NemProject&amp;rsquo;s github nem-sdk, a javascript/nodejs sdk for nem and the browser. nem-api, a javascript API Wrapper for the NIS Layer of the NEM Blockchain Platform. nem-apps, a java library to initiate, co-sign and monitor transactions csharp2nem, a C# library nis-ruby, a ruby client library for the NEM Infrastructure Server AP NanoSnippets  Tools  Harvesting calculator  Testnet  Testnet Nodes Nemnodes.</description>
+Papers  NEM technical paper Apostille white paper Catapult white paper  Documentation  NIS API Nem&amp;rsquo;s Github Bitcoin and Cryptocurrency Technologies  Code and Libraries  Official NemProject&amp;rsquo;s github nem-sdk, a javascript/nodejs sdk for nem and the browser. nem-library, an abstraction for NEM Blockchain using a Reactive approach for creating Blockchain applications. nem-api, a javascript API Wrapper for the NIS Layer of the NEM Blockchain Platform.</description>
     </item>
     
     <item>
