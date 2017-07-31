@@ -489,3 +489,5 @@ transactionEntity.fee=6000000
 // sign and send to NIS
 nem.model.transactions.send(common, transactionEntity, endpoint).then(function(res) {console.log("done");});
 ```
+
+

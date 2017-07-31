@@ -1,5 +1,5 @@
 +++
-prev = "/07-monitoring-blockchain"
+prev = "/08-multisig-accounts.md"
 next = "90-snippets"
 weight = 800
 title = "Debugging"

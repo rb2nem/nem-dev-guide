@@ -50,6 +50,27 @@ You can pass POST data on the command line as key-value pairs. For string value,
 
 [nem-library](https://nemlibrary.com/) is an abstraction for NEM Blockchain using a Reactive approach for creating Blockchain applications. It is included in the tools container. Just open the Typescript repl with `./ndev ts-node`.
 
+An incompatibility between ts-node and typescript currently requires you to initialise an variable `exports` to and empty hash like so:
+```
+exports = {}
+```
+I have also discovered the need to have `import` instructions consist of only one line.
+This will work
+```
+import {Account, MultisigTransaction, TimeWindow, Transaction, TransactionTypes} from "nem-library";
+```
+but this won't (in ts-node):
+```
+import {Account, MultisigTransaction, TimeWindow, 
+        Transaction, TransactionTypes} from "nem-library";
+```
+
+You can also use tsc inside the container to compile your typescript to javascript and then run it with nodejs:
+```
+tsc mycode.ts
+node mycode.js
+```
+
 
 ### jq
 

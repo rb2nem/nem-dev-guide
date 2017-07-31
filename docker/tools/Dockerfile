@@ -8,6 +8,7 @@ RUN npm install -g npm && \
     npm install -g n && \
     n stable
 RUN npm install nem-sdk sockjs-client stompjs zerorpc ts-node typescript nem-library
+RUN npm install -g ts-node typescript nem-library
 RUN gem install rest-client
 #RUN echo "en_US.UTF-8 UTF-8">> /etc/locale.gen
 #RUN locale-gen
