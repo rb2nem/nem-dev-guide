@@ -108,6 +108,16 @@ The first is polling, meaning that regularly you retrieve the last block and han
     </item>
     
     <item>
+      <title>Managing and using multisig accounts</title>
+      <link>https://rb2nem.github.io/nem-dev-guide/08-multisig-accounts/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://rb2nem.github.io/nem-dev-guide/08-multisig-accounts/</guid>
+      <description>When an account is created, it is unisig, meaning that it is fully independant, and controls its funds independently from other accounts. A multisig account on the other hand, does not have control over its funds and assets. Only the cosignatories of the multisig can initiate transactions for the account, as illustrated in the transfer transactions section.
+A multisig account is labeled as n-of-m, meaning to m cosignatories have been added, and that at least the quorim of n of them have to accept a transaction for it to be included in the blockchain.</description>
+    </item>
+    
+    <item>
       <title>Debugging</title>
       <link>https://rb2nem.github.io/nem-dev-guide/80-debugging/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

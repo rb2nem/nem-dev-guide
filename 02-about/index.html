@@ -213,6 +213,14 @@
           
           
           
+            <li class="dd-item " data-nav-id="/08-multisig-accounts/">
+              <a href="https://rb2nem.github.io/nem-dev-guide/08-multisig-accounts/">
+                <span>Managing and using multisig accounts     </i></span>
+              </a>
+            </li>
+          
+          
+          
             <li class="dd-item " data-nav-id="/80-debugging/">
               <a href="https://rb2nem.github.io/nem-dev-guide/80-debugging/">
                 <span>Debugging     </i></span>
@@ -399,6 +407,29 @@ when relevant. As an example, here is the output when querying google.com, where
 <h3 id="typescript-and-nem-library">Typescript and nem-library</h3>
 
 <p><a href="https://nemlibrary.com/">nem-library</a> is an abstraction for NEM Blockchain using a Reactive approach for creating Blockchain applications. It is included in the tools container. Just open the Typescript repl with <code>./ndev ts-node</code>.</p>
+
+<p>An incompatibility between ts-node and typescript currently requires you to initialise an variable <code>exports</code> to and empty hash like so:</p>
+
+<pre><code>exports = {}
+</code></pre>
+
+<p>I have also discovered the need to have <code>import</code> instructions consist of only one line.
+This will work</p>
+
+<pre><code>import {Account, MultisigTransaction, TimeWindow, Transaction, TransactionTypes} from &quot;nem-library&quot;;
+</code></pre>
+
+<p>but this won&rsquo;t (in ts-node):</p>
+
+<pre><code>import {Account, MultisigTransaction, TimeWindow, 
+        Transaction, TransactionTypes} from &quot;nem-library&quot;;
+</code></pre>
+
+<p>You can also use tsc inside the container to compile your typescript to javascript and then run it with nodejs:</p>
+
+<pre><code>tsc mycode.ts
+node mycode.js
+</code></pre>
 
 <h3 id="jq">jq</h3>
 
