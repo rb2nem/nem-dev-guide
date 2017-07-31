@@ -135,4 +135,4 @@ the NIS process running in the other container. This makes it possible to inspec
 port 8081 of the host, accessible at [http://127.0.0.1:8081](http://127.0.0.1:8081). If you get a blank page with Google Chrome, try with 
 [Firefox](http://www.getfirefox.com).
 
-You stop the containers with `ndev --shutdown`.
+You stop and remove the containers with `ndev --shutdown`. Be sure to copy any data you want to keep out of the cointainers before running this command!
