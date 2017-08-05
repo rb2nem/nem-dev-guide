@@ -313,7 +313,11 @@
 <li><a href="#rapid-polling">Rapid polling</a></li>
 <li><a href="#slow-polling">Slow polling</a></li>
 </ul></li>
-<li><a href="#passive-monitoring-the-subscription-approach">Passive monitoring: the subscription approach</a></li>
+<li><a href="#passive-monitoring-the-subscription-approach">Passive monitoring: the subscription approach</a>
+<ul>
+<li><a href="#typescript-and-nem-library">Typescript and nem-library</a></li>
+<li><a href="#javascript-and-nem-sdk">Javascript and nem-sdk</a></li>
+</ul></li>
 </ul></li>
 </ul>
 </nav>
@@ -653,6 +657,29 @@ specific events. This is done over a websocket connection.</p>
 messages. If your language provides libraries to communicate with STOMP over websockets, it should be easy to interoperate with NIS.
 Just note that Websocksets require a handshake, which is visible at the stomp client level. If you are interested in more details,
 <a href="http://jmesnil.net/stomp-websocket/doc/#requirements">a good explanation is available on the web</a>.</p>
+
+<h3 id="typescript-and-nem-library">Typescript and nem-library</h3>
+
+<p><a href="http://nemlibrary.com">nem-library</a> provides a great abstraction layer, and makes this passive monitoring really easy.
+You just initialise an addres; a, UnconfirmedTransactionListener passing it the NIS to connect to, and you are reasy to go!
+Here&rsquo;s the code, from the <a href="https://nemlibrary.com/guide/listener/#how-to-create-a-listener-for-unconfirmed-transactions-information">nem-library documentation</a>.</p>
+
+<pre><code class="language-typescript">import {Address, NEMLibrary, NetworkTypes, UnconfirmedTransactionListener} from &quot;nem-library&quot;;
+
+// Initialize NEMLibrary for TEST_NET Network
+NEMLibrary.bootstrap(NetworkTypes.TEST_NET);
+
+const address = new Address(&quot;TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G&quot;);
+
+let unconfirmedTransactionListener = new UnconfirmedTransactionListener({domain: &quot;localhost&quot;}).given(address);
+unconfirmedTransactionListener.subscribe(x =&gt; {
+    console.log(x);
+}, err =&gt; {
+    console.log(err);
+});
+</code></pre>
+
+<h3 id="javascript-and-nem-sdk">Javascript and nem-sdk</h3>
 
 <p>We will work in javascript, for which the library stompjs covers our needs. These can be installed with</p>
 

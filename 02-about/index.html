@@ -321,6 +321,7 @@
 <li><a href="#docker-config">Docker config</a>
 <ul>
 <li><a href="#using-the-docker-config">Using the docker config</a></li>
+<li><a href="#compiling-and-running-code">Compiling and running code</a></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -497,6 +498,17 @@ port 8081 of the host, accessible at <a href="http://127.0.0.1:8081">http://127.
 <a href="http://www.getfirefox.com">Firefox</a>.</p>
 
 <p>You stop and remove the containers with <code>ndev --shutdown</code>. Be sure to copy any data you want to keep out of the cointainers before running this command!</p>
+
+<h3 id="compiling-and-running-code">Compiling and running code</h3>
+
+<p>The <code>ndev</code> script mounts the <code>./code</code> directory into the <code>tools</code> container under <code>/home/nem/code</code>.
+If you put a typescript file in that directory, let&rsquo;s say <code>code/test.ts</code>, you can compile and run it from the host without entering the container with</p>
+
+<pre><code class="language-bash">./ndev tsc code/test.ts
+./ndev node code/test.js
+</code></pre>
+
+<p>This lets you use your favourite editor, while still enjoying the facilities offered by the container.</p>
 
 
       
