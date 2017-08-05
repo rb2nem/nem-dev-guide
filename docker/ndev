@@ -14,7 +14,13 @@
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -P )"
 # by default start nis
 with_nis=1
+# by default, do not pass a user to run the command as
+# if we run in the tools container, this will be set to run the command as user nem.
+docker_user_flag=""
 pull=0
+# tools_dir is the directory mounted in the tools container to /home/nem/code
+# currently hard-coded in this variable
+tools_dir="./code"
 
 usage() {
     cat <<-EOF
@@ -111,8 +117,9 @@ handle_config_file() {
         echo "In which *existing* directory should the persistent data of the container be stored? (it should exist, no directory will be created)"
         read persistent_location
       done
-      echo "#if you change this, change also mitp/.env!" >> settings.sh
+      echo "#if you change this, change also tools/.env!" >> settings.sh
       echo "export persistent_location=\"$persistent_location\"" >> settings.sh
+      echo "export tools_dir=\"$PWD/code\"" >> settings.sh
     fi
     . $script_dir/settings.sh
 
@@ -128,6 +135,10 @@ handle_command() {
 	    container="tools"
 	    ;;
 	  bash)
+	    [[ -z $container ]] && container="tools"
+	    ;;
+          # by default, execute command in tools container
+	  *)
 	    [[ -z $container ]] && container="tools"
 	    ;;
 	esac  
@@ -150,6 +161,7 @@ start_containers() {
 # start docker containers if needed, possibly with nis
     if [[ -z "$nis_container" ]] ; then 
       mkdir -p $persistent_location/nem
+      mkdir -p $tools_dir
       docker-compose up -d
       [[ $with_nis -eq 1 ]] && sleep 1 && docker exec -it docker_nemdevnis_1 supervisorctl start nis ;
       # update running containers variable after starting containers
@@ -188,6 +200,14 @@ pull_images() {
         fi
 }
 
+
+set_docker_user_flag() {
+
+    if [[ $container = "tools" ]]; then
+        docker_user_flag="-u nem"
+    fi
+}
+
 # go to script directory to have Dockerfile available
 cd $script_dir
 handle_args "$@"
@@ -211,8 +231,10 @@ if [[ $shutdown -eq 1 ]] ; then
 fi
 # make args consistent with command
 handle_command $cmd
+set_docker_user_flag
 
 start_containers
 if [[ -n "$cmd" ]]; then
-  docker exec -it $(eval "echo \$${container}_container") $cmd
+set -x
+  docker exec ${docker_user_flag} -it $(eval "echo \$${container}_container") bash -i -c "$cmd"
 fi

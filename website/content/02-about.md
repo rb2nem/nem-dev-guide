@@ -136,3 +136,13 @@ port 8081 of the host, accessible at [http://127.0.0.1:8081](http://127.0.0.1:80
 [Firefox](http://www.getfirefox.com).
 
 You stop and remove the containers with `ndev --shutdown`. Be sure to copy any data you want to keep out of the cointainers before running this command!
+
+### Compiling and running code
+
+The `ndev` script mounts the `./code` directory into the `tools` container under `/home/nem/code`.
+If you put a typescript file in that directory, let's say `code/test.ts`, you can compile and run it from the host without entering the container with
+```bash
+./ndev tsc code/test.ts
+./ndev node code/test.js
+```
+This lets you use your favourite editor, while still enjoying the facilities offered by the container. 

@@ -255,6 +255,31 @@ messages. If your language provides libraries to communicate with STOMP over web
 Just note that Websocksets require a handshake, which is visible at the stomp client level. If you are interested in more details,
 [a good explanation is available on the web](http://jmesnil.net/stomp-websocket/doc/#requirements).
 
+### Typescript and nem-library
+
+[nem-library](http://nemlibrary.com) provides a great abstraction layer, and makes this passive monitoring really easy.
+You just initialise an addres; a, UnconfirmedTransactionListener passing it the NIS to connect to, and you are reasy to go!
+Here's the code, from the [nem-library documentation](https://nemlibrary.com/guide/listener/#how-to-create-a-listener-for-unconfirmed-transactions-information).
+
+```typescript
+import {Address, NEMLibrary, NetworkTypes, UnconfirmedTransactionListener} from "nem-library";
+
+// Initialize NEMLibrary for TEST_NET Network
+NEMLibrary.bootstrap(NetworkTypes.TEST_NET);
+
+const address = new Address("TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G");
+
+let unconfirmedTransactionListener = new UnconfirmedTransactionListener({domain: "localhost"}).given(address);
+unconfirmedTransactionListener.subscribe(x => {
+    console.log(x);
+}, err => {
+    console.log(err);
+});
+```
+
+
+### Javascript and nem-sdk
+
 We will work in javascript, for which the library stompjs covers our needs. These can be installed with
 ```
 npm install -g stompjs
@@ -361,3 +386,4 @@ You might want to check if this is an incoming our outgoing transaction. But tha
 
 If you want to have a look at other websocket features proposed by NIS, the best place to look is [the deprecated lightwallet 
 documentation](https://github.com/QuantumMechanics/nem-lightwallet/tree/master/lightwallet).
+
