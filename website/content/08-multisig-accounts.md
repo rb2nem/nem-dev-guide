@@ -47,7 +47,7 @@ With everything imported, we can bootstrap the network (here the testnet) and sp
 
 ```
 nemlibrary.bootstrap(networktypes.test_net);
-const transactionhttp = new transactionhttp({domain: "104.128.226.60"});
+const transactionhttp = new TransactionHttp({domain: "104.128.226.60"});
 ```
 
 The nem-library examples use environment variables to set key parameters. In your own code you can replace
@@ -99,7 +99,7 @@ import {
 // Initialize NEMLibrary for TEST_NET Network
 nemlibrary.bootstrap(networktypes.test_net);
 
-const transactionhttp = new transactionhttp({domain: "104.128.226.60"});
+const transactionhttp = new TransactionHttp({domain: "104.128.226.60"});
 
 // Replace with the private key of the account that you want to convert into multisig
 const privateKey: string = process.env.PRIVATE_KEY;
