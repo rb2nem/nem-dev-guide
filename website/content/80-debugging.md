@@ -1,5 +1,5 @@
 +++
-prev = "/08-multisig-accounts.md"
+prev = "09-mosaics"
 next = "90-snippets"
 weight = 800
 title = "Debugging"

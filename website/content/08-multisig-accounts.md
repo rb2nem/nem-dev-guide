@@ -1,6 +1,6 @@
 +++
-prev = "/07-monitoring-blockchain.md"
-next = "80-debugging"
+prev = "07-monitoring-blockchain"
+next = "09-mosaics"
 weight = 80
 title = "Managing and using multisig accounts"
 toc = true

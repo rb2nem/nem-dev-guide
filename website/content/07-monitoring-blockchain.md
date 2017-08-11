@@ -1,6 +1,6 @@
 +++
 prev = "/06-transaction-transfer"
-next = "80-debugging"
+next = "08-multisig-accounts"
 weight = 70
 title = "Monitoring the blockchain"
 toc = true
