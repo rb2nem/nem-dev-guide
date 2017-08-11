@@ -2,7 +2,7 @@
 prev = "08-multisig-accounts"
 next = "80-debugging"
 weight = 80
-title = "Managing and using multisig accounts"
+title = "Namespaces and Mosaics"
 toc = true
 +++
 
