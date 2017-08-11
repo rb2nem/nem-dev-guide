@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="https://rb2nem.github.io/nem-dev-guide/images/favicon.png" type="image/x-icon" />
 
     
-    <title>NEM Accounts</title>
+    <title>Managing and using multisig accounts</title>
     <link href="https://rb2nem.github.io/nem-dev-guide//css/nucleus.css" rel="stylesheet">
     <link href="https://rb2nem.github.io/nem-dev-guide//css/font-awesome.min.css" rel="stylesheet">
     <link href="https://rb2nem.github.io/nem-dev-guide//css/hybrid.css" rel="stylesheet">
@@ -27,7 +27,7 @@
 <link rel="stylesheet" type="text/css" href="https://rb2nem.github.io/nem-dev-guide/css/tabs.css">
 
   </head>
-  <body class="" data-url="/03b-accounts/">
+  <body class="" data-url="/09-mosaics/">
     <nav id="sidebar">
   <div id="header-wrapper">
     <div id="header">
@@ -165,7 +165,7 @@
           
           
           
-            <li class="dd-item active" data-nav-id="/03b-accounts/">
+            <li class="dd-item " data-nav-id="/03b-accounts/">
               <a href="https://rb2nem.github.io/nem-dev-guide/03b-accounts/">
                 <span>NEM Accounts     </i></span>
               </a>
@@ -221,7 +221,7 @@
           
           
           
-            <li class="dd-item " data-nav-id="/09-mosaics/">
+            <li class="dd-item active" data-nav-id="/09-mosaics/">
               <a href="https://rb2nem.github.io/nem-dev-guide/09-mosaics/">
                 <span>Managing and using multisig accounts     </i></span>
               </a>
@@ -286,7 +286,7 @@
                 
                 
               <div id="top-github-link">
-                  <a class="github-link" href="https://github.com/rb2nem/nem-dev-guide/edit/master/website/content/03b-accounts.md" target="blank">
+                  <a class="github-link" href="https://github.com/rb2nem/nem-dev-guide/edit/master/website/content/09-mosaics.md" target="blank">
                     <i class="fa fa-code-fork"></i>
                     Edit this page
                   </a>
@@ -307,7 +307,7 @@
                 
                   
                 
-                <span itemprop="title"> NEM Accounts</span>
+                <span itemprop="title"> Managing and using multisig accounts</span>
               </div>
               
                   <div class="progress">
@@ -316,14 +316,7 @@
 <ul>
 <li>
 <ul>
-<li><a href="#private-key-public-key-address">Private key, public key, address</a></li>
-<li><a href="#multisig-accounts">Multisig accounts</a></li>
-<li><a href="#accounts-on-the-blockchain">Accounts on the blockchain</a></li>
-<li><a href="#key-length-and-security">Key length and security</a></li>
-<li><a href="#account-data">Account data</a></li>
-<li><a href="#the-public-key-of-the-account-is-not-empty-why">The public key of the account is not empty, why?</a></li>
-<li><a href="#generating-a-key-pair">Generating a key-pair</a></li>
-<li><a href="#generating-the-address-from-the-public-key">Generating the address from the public key</a></li>
+<li><a href="#namespaces">Namespaces</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -336,178 +329,26 @@
             
     	        <div id="body-inner">
                 
-                <h1>NEM Accounts</h1>
+                <h1>Managing and using multisig accounts</h1>
                 
 
 
 
-<h2 id="private-key-public-key-address">Private key, public key, address</h2>
+<p>NEM&rsquo;s mosaics are let you create and manage tokens on the NEM blockchain. These tokens can then be transferred by issuing transactions
+just as with NEM&rsquo;s native tokens, XEMs.</p>
 
-<p>As explained in Chapter 2 of the <a href="http://nem.io/NEM_techRef.pdf">Technical
-Reference</a>, an account is an Ed25519
-cryptographic keypair associated to a mutable state stored on the NEM
-blockchain. The state of the account is modified when transactions involving it
-are accepted by the network.</p>
+<p>A Mosaic is always created in a namespace. A namespace is analog to a domain name you register on the internet. A domain name can be
+seen as a namespace on the internet. john@example1.com and john@example2.com are distinct email addresses even though they have the same user part.
+Across namespace, you can have duplicate items, but the combination of the namespace and the user part are distinct.</p>
 
-<p>Nem is using the <a href="https://ed25519.cr.yp.to/">Ed25519 publick key signature system</a> with the
-SHA3 hashing algorithm.
-Ed25519 was <a href="https://ed25519.cr.yp.to/ed25519-20110926.pdf">introduced</a> when sha3 was not yet
-standardised, and it uses the SHA512 hashing algorithm (the paper names it Ed25519-SHA-512).
-However the paper clearly states that <code>we will not hesitate to recommend Ed25519-SHA-3 after SHA-3 is standardized</code>.
-<div class="notices note" ><p>Most Ed25519 implementations use the SHA-512 method described in the original paper. To generate NEM keypairs,
-you might need to patch standard implementations, as was <a href="https://github.com/NemProject/nem-py/blob/master/ed25519.py">done for the python implementation</a>
- by the NEM authors..</p>
-</div>
-</p>
+<p>The same goes for namespaces and Mosaics. You first need to create a namespace on the NEM blockchain, and in that namespace you can create
+your mosaic and name it (nearly) anything you want. A <a href="https://blog.nem.io/mosaics-and-namespaces-2/">detailed overview of namespaces</a> is available.</p>
 
-<p>The private key uniquely identifies a NEM account. The public key is derived from the private key, and the address of the account is
-derived from the public key.</p>
+<p>A good guide is available to <a href="https://blog.nem.io/maing-namespaces-and-mosaics/">create your Mosaics with NanoWallet</a> and we will not duplicate
+this content here. In this section, we will focus on how you can programmatically create and manipulate NEM&rsquo;s Mosaics. We will do that
+with <a href="http://www.nemlibrary">nem-library</a>.</p>
 
-<p>The address of an account is a base-32 encoded triplet consisting of:
-* network byte: is it an address on the testnet or the mainnet?
-* 160-bit hash of the public key
-* 4 byte checksum, for detection of mistyped addresses</p>
-
-<p>From this description we see that we can generate a new account offline, there&rsquo;s
-no need to be connected to the network to create an account.</p>
-
-<p>Here is the code generating an address from the public key, <a href="https://github.com/NemProject/nem.core/blob/master/src/main/java/org/nem/core/model/Address.java#L81">extracted from nem.code</a>:</p>
-
-<pre><code class="language-java">        private static String generateEncoded(final byte version, final byte[] publicKey) {
-                // step 1: sha3 hash of the public key
-                final byte[] sha3PublicKeyHash = Hashes.sha3_256(publicKey);
-
-                // step 2: ripemd160 hash of (1)
-                final byte[] ripemd160StepOneHash = Hashes.ripemd160(sha3PublicKeyHash);
-
-                // step 3: add version byte in front of (2)
-                final byte[] versionPrefixedRipemd160Hash = ArrayUtils.concat(new byte[] { version }, ripemd160StepOneHash);
-
-                // step 4: get the checksum of (3)
-                final byte[] stepThreeChecksum = generateChecksum(versionPrefixedRipemd160Hash);
-
-                // step 5: concatenate (3) and (4)
-                final byte[] concatStepThreeAndStepSix = ArrayUtils.concat(versionPrefixedRipemd160Hash, stepThreeChecksum);
-
-                // step 6: base32 encode (5)
-                return Base32Encoder.getString(concatStepThreeAndStepSix);
-        }
-
-</code></pre>
-
-<p>We see that the steps are:</p>
-
-<ol>
-<li>take the sha3-256 of the public key</li>
-<li>take the <a href="https://en.wikipedia.org/wiki/RIPEMD">ripemd160</a> hash of that result.</li>
-<li>add the prefix corresponding to the network (&lsquo;N&rsquo; for Mainnet, &rsquo;T&rsquo; for Testnet, &rsquo;M&rsquo; for Mijin)</li>
-<li>compute the checksum by taking the 4 left-most bytes of the sha3-256 of the previous step</li>
-<li>append the checksum to the result of step 3</li>
-</ol>
-
-<h2 id="multisig-accounts">Multisig accounts</h2>
-
-<p>Nem account can be converted to multisig account (from multi signatures). A multisig account has co-signatories accounts,
-and it cannot initiate transactions itself. Only the co-signatories can initiate transactions.</p>
-
-<p>When an account is converted to multisig, the transaction adds the co-signatories and indicates how many of them need to
-accept a transaction for it to go through. That&rsquo;s why you&rsquo;ll hear that NEM supports N-of-M multisig accounts. A multisig account
-can have M co-signatories, of which N need to validate the transactions. As long as N is smaller or equal to M, it is a
-supported configuration. You can have a 1-of-2, 3-of-4, 7-of-20, etc&hellip;</p>
-
-<h2 id="accounts-on-the-blockchain">Accounts on the blockchain</h2>
-
-<p>From the explanation above, we see that we can create an account without ever interacting the with blockchain.
-Does it mean that all possible accounts are pre-defined on the blockchain? No. It means that only accounts that
-have had activity are tracked on the blockchain. Creating your account is done by defining your private key. With
-that private key you have the information needed to access the related account. Be before it had any activity,
-it isn&rsquo;t tracked on the blockchain and the amount it stores is 0.</p>
-
-<p>So what is an activity? It is simply a transaction involving the account. That can be an incoming transaction (the
-first transaction obviously can&rsquo;t be an outgoing transaction) or a multi-sig conversion transaction.</p>
-
-<h2 id="key-length-and-security">Key length and security</h2>
-
-<p>The private key is 256 bits long, which might seem small when you hear advices to <a href="http://stackoverflow.com/a/1904541">use 2048 bits keys for RSA</a>.
-But <a href="https://security.stackexchange.com/a/101045">key length is not the only parameter defining your security</a>. Nem
-uses Ed25519, which is an <a href="https://en.wikipedia.org/wiki/Elliptic_curve_cryptography">elliptic curve cryptography</a>,
-requiring smaller key than non elliptic curve cryptography methods to provide the same security level.
-It appears that in general, to break an n bit elliptic curve public key, the effort is 2^(n/2), or about 3.4*10^38, basic operations.</p>
-
-<p>The probability to randomly generate a secret key that is linked to an account already existing is also very small.
-The key being 256 bits long, there are 10^77 possibilities. We thus see that collision probability is very small, and in
-cryptographic term, negligible.</p>
-
-<p>What&rsquo;s more, you can increase the security of your account by using multi-sig, with which multiple accounts have to validate
-transactions from one account.</p>
-
-<h2 id="account-data">Account data</h2>
-
-<p>The blockchain stores the following data about accounts:</p>
-
-<ul>
-<li>address: the account address</li>
-<li>balance: the amount of micro-XEMs stored in the account.</li>
-<li>importance: denotes the probability of an account to generate the next block in case the account has harvesting turned on.</li>
-<li>public key: the public key of the account can be used to validate signatures of the account</li>
-<li>label: unused, always null</li>
-<li>harvestedBlocks: the number of blocks this account has generated.</li>
-</ul>
-
-<h2 id="the-public-key-of-the-account-is-not-empty-why">The public key of the account is not empty, why?</h2>
-
-<p>The public key of an account will be stored on the blockchain with the first transaction issued the account. An account which hasn&rsquo;t issued any
-transaction will have its public key field empty.</p>
-
-<h2 id="generating-a-key-pair">Generating a key-pair</h2>
-
-<p>The easiest way to generate a key-pair is currently the <a href="https://github.com/QuantumMechanics/NEM-sdk">nem-sdk</a>, which is a javascript implementation
-usable in the browser and on nodejs. All this is setup in the docker container accompanying this guide.</p>
-
-<p>The first step is to generate a random private key.
-When printed as an hexadecimal value, it can be used to create an account with the NanoWallet.</p>
-
-<p>Here is how you generate a key-pair:</p>
-
-<pre><code class="language-javascript">//import the nem-sdk
-// This is not needed if you use the repl.js script available in the container
-var nem = require(&quot;nem-sdk&quot;).default;
-// generate 32 random bytes. 
-// You could write the 32 bytes of your choice if you prefer, but that might be dangerous as
-// it would be less random.
-// 
-var rBytes = nem.crypto.nacl.randomBytes(32);
-// convert the random bytes to an hex string
-// the result, rHex, can be printed out to the console for taking a backup with console.log(rBytes).
-// Take a backup copy of that value as it lets you recreate the keypair to give
-// you access to your account.
-// This value is also usable with the NEM NanoWallet.
-var rHex = nem.utils.convert.ua2hex(rBytes);
-// generate the keypair
-var keyPair = nem.crypto.keyPair.create(rHex);
-</code></pre>
-
-<p>The public key can be printed out easily with:</p>
-
-<pre><code class="language-javascript">keyPair.publicKey.toString()
-'4fe5efd97360bc8a32ec105d419222eeb714e6d06fd8b895a5eedda2b0edf931'
-</code></pre>
-
-<h2 id="generating-the-address-from-the-public-key">Generating the address from the public key</h2>
-
-<p>As described above, the address has a prefix for each network supported
-(mainnet, testnet, mijin), so the nem-sdk helpers to generate an address take
-as argument the public key and the network id for which to generate the
-address.</p>
-
-<p>The network ids are stored under <code>nem.model.network.data.testnet.id</code>,
-<code>nem.model.network.data.mainnet.id</code>, <code>nem.model.network.data.mijin.id</code>.</p>
-
-<p>With this info, we can generate the address:</p>
-
-<pre><code class="language-javascript">nem.model.address.toAddress(keyPair.publicKey.toString(),  nem.model.network.data.testnet.id)
-'TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G'
-</code></pre>
+<h2 id="namespaces">Namespaces</h2>
 
 
       
@@ -516,8 +357,8 @@ address.</p>
 
     <div id="navigation">
         
-        <a class="nav nav-prev" href="https://rb2nem.github.io/nem-dev-guide//03-setting-up-environment"> <i class="fa fa-chevron-left"></i></a>
-        <a class="nav nav-next" href="https://rb2nem.github.io/nem-dev-guide/04-blockchain-requests" style="margin-right: 0px;"><i class="fa fa-chevron-right"></i></a>
+        <a class="nav nav-prev" href="https://rb2nem.github.io/nem-dev-guide/08-multisig-accounts"> <i class="fa fa-chevron-left"></i></a>
+        <a class="nav nav-next" href="https://rb2nem.github.io/nem-dev-guide/80-debugging" style="margin-right: 0px;"><i class="fa fa-chevron-right"></i></a>
     </div>
 
     </section>

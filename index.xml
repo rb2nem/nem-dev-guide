@@ -118,6 +118,16 @@ A multisig account is labeled as n-of-m, meaning to m cosignatories have been ad
     </item>
     
     <item>
+      <title>Managing and using multisig accounts</title>
+      <link>https://rb2nem.github.io/nem-dev-guide/09-mosaics/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://rb2nem.github.io/nem-dev-guide/09-mosaics/</guid>
+      <description>NEM&amp;rsquo;s mosaics are let you create and manage tokens on the NEM blockchain. These tokens can then be transferred by issuing transactions just as with NEM&amp;rsquo;s native tokens, XEMs.
+A Mosaic is always created in a namespace. A namespace is analog to a domain name you register on the internet. A domain name can be seen as a namespace on the internet. john@example1.com and john@example2.com are distinct email addresses even though they have the same user part.</description>
+    </item>
+    
+    <item>
       <title>Debugging</title>
       <link>https://rb2nem.github.io/nem-dev-guide/80-debugging/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
