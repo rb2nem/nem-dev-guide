@@ -367,7 +367,7 @@ First all required classes are imported:</p>
 <p>With everything imported, we can bootstrap the network (here the testnet) and specify which NIS we want to send the transaction to:</p>
 
 <pre><code>nemlibrary.bootstrap(networktypes.test_net);
-const transactionhttp = new transactionhttp({domain: &quot;104.128.226.60&quot;});
+const transactionhttp = new TransactionHttp({domain: &quot;104.128.226.60&quot;});
 </code></pre>
 
 <p>The nem-library examples use environment variables to set key parameters. In your own code you can replace
@@ -417,7 +417,7 @@ transactions from that account can only be initiated by a cosignatory.</p>
 // Initialize NEMLibrary for TEST_NET Network
 nemlibrary.bootstrap(networktypes.test_net);
 
-const transactionhttp = new transactionhttp({domain: &quot;104.128.226.60&quot;});
+const transactionhttp = new TransactionHttp({domain: &quot;104.128.226.60&quot;});
 
 // Replace with the private key of the account that you want to convert into multisig
 const privateKey: string = process.env.PRIVATE_KEY;
