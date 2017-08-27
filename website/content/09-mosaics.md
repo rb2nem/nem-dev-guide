@@ -237,6 +237,44 @@ This defines
 * a transferable Mosaic that is not divisible, has an initial supply of 9000000 that can be changed over time
 * the levy applied to transfers of this Mosaic. The levy is paid in XEMs to the account creating the Mosaic. The amount of the levy is 2 ten-thousandths of the transfered value.
 
+
+This is the resulting object  m̀d`:
+
+```
+MosaicDefinition {
+  creator: 
+   PublicAccount {
+     address: 
+      Address {
+        value: 'TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G',
+        networkType: 152 },
+     publicKey: '4fe5efd97360bc8a32ec105d419222eeb714e6d06fd8b895a5eedda2b0edf931' },
+  id: 
+   MosaicId {
+     namespaceId: 'devguidetest.sub1.sub2',
+     name: 'devguide-mosaic' },
+  description: 'my test mosaic description',
+  properties: 
+   MosaicProperties {
+     initialSupply: 9000000,
+     supplyMutable: true,
+     transferable: true,
+     divisibility: 0 },
+  levy: 
+   MosaicLevy {
+     type: 2,
+     recipient: 
+      Address {
+        value: 'TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G',
+        networkType: 152 },
+     mosaicId: MosaicId { namespaceId: 'nem', name: 'xem' },
+     fee: 2 },
+  metaId: undefined }
+
+
+```
+
+
 This MosaicDefinition instance can then be used in the creation of a `MosaicDefinitionCreationTransaction` to be advertised to the network:
 
 ```
@@ -272,7 +310,7 @@ const account = Account.createWithPrivateKey(privateKey);
 const transactionHttp = new TransactionHttp();
 const md = new MosaicDefinition(
         PublicAccount.createWithPublicKey(account.publicKey),
-        new MosaicId("my-namespace", "my-mosaic"),
+        new MosaicId("devguidetest.sub1.sub2", "devguide-mosaic"),
         "mosaic description",
         new MosaicProperties(0, 9000000, true, true),
         new MosaicLevy(
@@ -293,6 +331,16 @@ transactionHttp.announceTransaction(signedTransaction).subscribe( x => console.l
 
 ```
 
+### Modifying a Mosaic
+
+The NEM API has the best explanation about this, and it is copied verbatim here:
+
+There might be the need to alter a mosaic definition, either because you want to change the description or because you supplied faulty properties or faulty levy data. This is done simply by issuing another mosaic definition creation transaction as described above with the same mosaic id but different description/properties/levy. However there are some restriction when doing so:
+
+The description can be changed at any point even if the creator does not own the entire supply.
+Properties and the levy data can only be changed if the creator owns every single mosaic of that type. This is necessary to prevent the creator from secretly introducing a levy or inflating the mosaic by increasing the supply.
+Keep in mind that renewing the mosaic definition costs you the creation fee again, so it is worthwhile to double check the data before issuing the transaction.
+
 ### Mosaic supply change
 
 If you defined your Mosaic with a mutable supply, you can change the supply with a `MosaicSupplyChangeTransaction`.
@@ -302,14 +350,41 @@ You initialise such a transaction with:
 * the type of your change: increase or decrease the supply
 * the change in value to apply
 
-Here is an example:
+Here is an example creating the transaction:
 
 ```
-   tx = MosaicSupplyChangeTransaction.create(
-       TimeWindow.createWithDeadline(),
-       new MosaicId("my-namespace", "my-mosaic"),
-       MosaicSupplyType.Increase,
-       1000000);
+import {
+    MosaicSupplyChangeTransaction, MosaicSupplyType
+} from "nem-library";
+
+var tx = MosaicSupplyChangeTransaction.create(
+    TimeWindow.createWithDeadline(),
+    new MosaicId("my-namespace", "my-mosaic"),
+    MosaicSupplyType.Increase,
+    1000000);
+```
+
+This is the object created:
+
+```
+MosaicSupplyChangeTransaction {
+  type: 16386,
+  version: 1,
+  timeWindow: 
+   TimeWindow {
+     deadline: LocalDateTime { _date: [Object], _time: [Object] },
+     timeStamp: LocalDateTime { _date: [Object], _time: [Object] } },
+  signature: undefined,
+  signer: undefined,
+  transactionInfo: undefined,
+  mosaicId: 
+   MosaicId {
+     namespaceId: 'devguidetest.sub1.sub2',
+     name: 'devguide-mosaic' },
+  supplyType: 1,
+  delta: 1000000,
+  fee: 150000 }
+
 ```
 
 This defines a transaction to update our mosaic, increasing its total supply by on million, resulting
@@ -322,8 +397,13 @@ nem-library lets you send request to the network to retrieve existing Mosaic def
 This is done with a MosaicHttp instance
 
 ```
+import {
+    NEMLibrary, NetworkTypes, MosaicHttp, TransactionTypes
+} from "nem-library";
+
+
 const mosaicHttp = new MosaicHttp();
-const namespace = "my-namespace";
+const namespace = "devguidetest.sub1.sub2";
 
 mosaicHttp.getAllMosaicsGivenNamespace(namespace).subscribe(mosaicDefinitions => {
 	    console.log(mosaicDefinitions);
@@ -332,26 +412,27 @@ mosaicHttp.getAllMosaicsGivenNamespace(namespace).subscribe(mosaicDefinitions =>
 Answers to this request have this format:
 ```
 [ MosaicDefinition {
-    creator:
+    creator: 
      PublicAccount {
        address: [Object],
-       publicKey: '0e4573c386c5f8...' },
-    id: MosaicId { namespaceId: 'my-namespace', name: 'my-mosaic' },
-    description: 'mosaic description',
-    properties:
+       publicKey: '4fe5efd97360bc8a32ec105d419222eeb714e6d06fd8b895a5eedda2b0edf931' },
+    id: 
+     MosaicId {
+       namespaceId: 'devguidetest.sub1.sub2',
+       name: 'devguide-mosaic' },
+    description: 'my test mosaic description',
+    properties: 
      MosaicProperties {
-       initialSupply: 1000000,
+       initialSupply: 9000000,
        supplyMutable: true,
        transferable: true,
        divisibility: 0 },
-    levy: MosaicLevy{
-            MosaicLevyType.Percentil,
-            account.address,
-            MosaicId{"nem", "xem"},
-            2 },
-    metaId: 447 }
-]
+    levy: MosaicLevy { type: 2, recipient: [Object], mosaicId: [Object], fee: 2 },
+    metaId: 718 } ]
+
 ```
 
+Note that these are parameters used at definition time. Changes in supply are not reflected!
+Nem-library does not yet support requesting current supply. It will soon though!
 
 ### Mosaic transfers
