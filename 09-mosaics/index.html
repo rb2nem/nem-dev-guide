@@ -316,7 +316,20 @@
 <ul>
 <li>
 <ul>
-<li><a href="#namespaces">Namespaces</a></li>
+<li><a href="#namespaces">Namespaces</a>
+<ul>
+<li><a href="#root-namespaces">Root namespaces</a></li>
+<li><a href="#sub-namespaces">Sub-namespaces</a></li>
+<li><a href="#other-operations">Other operations</a></li>
+</ul></li>
+<li><a href="#mosaics">Mosaics</a>
+<ul>
+<li><a href="#mosaic-creation">Mosaic creation</a></li>
+<li><a href="#modifying-a-mosaic">Modifying a Mosaic</a></li>
+<li><a href="#mosaic-supply-change">Mosaic supply change</a></li>
+<li><a href="#requesting-mosaic-definition">Requesting Mosaic definition</a></li>
+<li><a href="#mosaic-transfers">Mosaic transfers</a></li>
+</ul></li>
 </ul></li>
 </ul>
 </nav>
@@ -349,6 +362,496 @@ this content here. In this section, we will focus on how you can programmaticall
 with <a href="http://www.nemlibrary">nem-library</a>.</p>
 
 <h2 id="namespaces">Namespaces</h2>
+
+<h3 id="root-namespaces">Root namespaces</h3>
+
+<p>Creating a namespace with nem-library is straight-forward and <a href="https://nemlibrary.com/guide/namespace/">illustrated in the project&rsquo;s documentation</a>.
+You create a ProvisionNamespaceTransaction passing the namespace to create as argument along the deadline of the transaction:</p>
+
+<pre><code>const namespace = &quot;new-namespace&quot;;
+
+const provisionNamespaceTransaction: Transaction = ProvisionNamespaceTransaction.create(
+    TimeWindow.createWithDeadline(),
+    namespace
+);
+</code></pre>
+
+<p>The object created has this form:</p>
+
+<pre><code>ProvisionNamespaceTransaction {
+  type: 8193,
+  version: 1,
+  timeWindow: 
+   TimeWindow {
+     deadline: LocalDateTime { _date: [Object], _time: [Object] },
+     timeStamp: LocalDateTime { _date: [Object], _time: [Object] } },
+  signature: undefined,
+  signer: undefined,
+  transactionInfo: undefined,
+  rentalFee: 100000000,
+  rentalFeeSink: 
+   Address {
+     value: 'TAMESPACEWH4MKFMBCVFERDPOOP4FK7MTDJEYP35',
+     networkType: 152 },
+  newPart: 'testdevguide',
+  parent: undefined,
+  fee: 150000 }
+
+</code></pre>
+
+<p>transaction type is 8193, as listed in the <a href="https://rb2nem.github.io/nem-dev-guide/05-transaction-overview">Transactions Overview</a>.
+The name of the namespace is under the key <code>newPart</code>. As this is a root namespace, the <code>parent</code> is undefined.
+Also note that the <code>fee</code> and <code>rentalFee</code> are set. The <code>rentalFee</code> is collected in a multisig account.</p>
+
+<div class="notices note" ><p>The rentalFee is not given to the harvesters because this would encourage
+harvesters to wait until they are allowed to harvest a block, include their
+provision namespace transaction in that block and thus essentially getting the
+namespace for free.</p>
+</div>
+
+
+<p>Once this transaction is created, you sign and announce it as you would any other transaction:</p>
+
+<pre><code>const signedTransaction = account.signTransaction(provisionNamespaceTransaction);
+transactionHttp.announceTransaction(signedTransaction).subscribe( x =&gt; console.log(x));
+</code></pre>
+
+<p>When the transaction is integrated in the blockchain, your namespace is registered.</p>
+
+<p>Here is the complete code:</p>
+
+<pre><code>import{
+    NEMLibrary, NetworkTypes, Transaction, TimeWindow, ProvisionNamespaceTransaction, Account, TransactionHttp
+} from &quot;nem-library&quot;;
+
+declare let process: any;
+
+// Initialize NEMLibrary for TEST_NET Network
+NEMLibrary.bootstrap(NetworkTypes.TEST_NET);
+
+const privateKey: string = process.env.PRIVATE_KEY;
+const account = Account.createWithPrivateKey(privateKey);
+const transactionHttp = new TransactionHttp({domain: &quot;104.128.226.60&quot;});
+
+const namespace = &quot;new-namespace&quot;;
+
+const provisionNamespaceTransaction: Transaction = ProvisionNamespaceTransaction.create(
+    TimeWindow.createWithDeadline(),
+    namespace
+);
+
+const signedTransaction = account.signTransaction(provisionNamespaceTransaction);
+transactionHttp.announceTransaction(signedTransaction).subscribe( x =&gt; console.log(x));
+</code></pre>
+
+<h3 id="sub-namespaces">Sub-namespaces</h3>
+
+<p>Creating a sub-namespace is very similar, but you pass the subspace before the parent namespace.</p>
+
+<pre><code>const provisionNamespaceTransaction: Transaction = ProvisionNamespaceTransaction.create(
+    TimeWindow.createWithDeadline(),
+    subnamespace,
+    namespace
+);
+</code></pre>
+
+<p>You can add only one level of subnamespace at a time.</p>
+
+<h3 id="other-operations">Other operations</h3>
+
+<p>The nem-library allows you to <a href="https://nemlibrary.com/guide/namespace/#how-to-know-if-a-namespace-exists">check if a namespace exists</a> and
+<a href="https://nemlibrary.com/guide/namespace/#how-to-know-the-owner-of-a-namespace">query the owner of a namespace</a>. Examples are provided in the
+documentation of the project.</p>
+
+<h2 id="mosaics">Mosaics</h2>
+
+<p>When creating a Mosaic, you have to first define several parameters applying to it.
+The first thing to define is the namespace in which the Mosaic will be defined. It has to be
+a namespace owned by the account creating the Mosaic.
+The namespace has to respect this pattern:<code>[a-z0-9][a-z0-9'_-]*( [a-z0-9'_-]+)*</code>.
+This means it has to start with a lowercase letter or a digit, optionally followed by a lowercase letter, a digit or one of the characters <code>'_-</code>.
+After that we can have several single-space separated groups of the same characters (lower case letter, digit or one of <code>'_-</code>).</p>
+
+<p>In short it means:</p>
+
+<ul>
+<li>it has to start with a lowercase letter or a digit</li>
+<li>from the second character you can also use the characters <code>'</code>, <code>_</code> and <code>-</code>.</li>
+<li>from the second character you can use spaces, but not multiple subsequent spaces.</li>
+<li>no trailing space, i.e. a space always must be followed by another character</li>
+</ul>
+
+<p>Some example of valid Mosaic definitions:</p>
+
+<ul>
+<li><code>allright</code></li>
+<li><code>4llright</code></li>
+<li><code>4 llright</code></li>
+<li><code>4 llright 4 nem</code></li>
+</ul>
+
+<p>But those are invalid:</p>
+
+<ul>
+<li><code>Allright</code> (uppercase)</li>
+<li><code>all  right</code> (2 subsequent spaces)</li>
+<li><code>allright!</code> (unsupported character)</li>
+<li><code>allright</code> (trailing space)</li>
+</ul>
+
+<p>You can easily check your Mosaic name with a regular expression checker as <a href="https://regex101.com/">regex101</a>.
+Enter the regular expression <code>[a-z0-9][a-z0-9'_-]*( [a-z0-9'_-]+)*</code> and enter you Mosaic name as the test string.
+The whole name of your mosaic must be covered by one match. If you have more than one match or some characters not
+covered by the regexp, your name is invalid.</p>
+
+<p>Accompanying the name of the Mosaic, you can provide an optional 512 character long description. All characters are
+accepted in the description string.</p>
+
+<p>There are also fundamental parameters that will defined your Mosaic such as:</p>
+
+<ul>
+<li>the initial supply, the initial number of token that will be available at creation time.</li>
+<li>the supply can also be marked as mutable if you want to modify the supply of your token over time.</li>
+<li>the transferability of your token</li>
+<li>the divisibility of your token, i.e the number after the decimal separator that you can specify when transfering the token.
+0 means one token can not be subdivided and can only be transfered as a whole. 1 means you can transfer a tenth of a token.</li>
+</ul>
+
+<p>You can also decide to impose a levy or not. The levy a fee that is transfered to an account determined at mosaic definition time
+for every transfer of that mosaic.
+You can decide to impose a levy in the Mosaic of your choice:</p>
+
+<ul>
+<li>XEMs, which are the standard tokens on the NEM blockchain</li>
+<li>or your own newly defined token.</li>
+</ul>
+
+<p>The levy is either an absolute value, independent from the amount of tokens transfered, or it can be expressed in percentile of the
+number of tokens transfered. A percentile of 100 will apply 1% of the amount transferred as levy. As such, the lowest levy you can apply a
+<sup>1</sup>&frasl;<sub>10000</sub> (on ten thousandth) of the transfered amount.</p>
+
+<p>When creating the Mosaic, a fee is paid to a sink address. An addressed managed by the NEM project.</p>
+
+<h3 id="mosaic-creation">Mosaic creation</h3>
+
+<p>Nem-library supports the creation of Mosaics. The first step is to create a MosaicDefinition, which specifies:</p>
+
+<ul>
+<li>the account for which the Mosaic is created</li>
+<li>a MosaicId, composed  of
+
+<ul>
+<li>the namespace in which the Mosaic will be created</li>
+<li>the Mosaic name</li>
+</ul></li>
+<li>a description of the Mosaic</li>
+<li>all properties of the Mosaic:
+
+<ul>
+<li>the divisibility (number)</li>
+<li>the initial supply (number)</li>
+<li>the transferability (boolean)</li>
+<li>the supply mutability (boolean)</li>
+</ul></li>
+<li>the definition of the levy:
+
+<ul>
+<li>the type of levy (percentile or absolute)</li>
+<li>the address to which the levy will be sent</li>
+<li>the MosaicId in which the levy will be paid (specifyin namespace and mosaic name as above)</li>
+<li>the fee value</li>
+<li>if percentile, the fee paid is <code>amount_transfered * fee/10000</code></li>
+<li>if absolute, the value is the fee paid whatever the amount transfered</li>
+</ul></li>
+</ul>
+
+<p>This translate in this code, taken from nem-library&rsquo;s documentation:</p>
+
+<pre><code>    const md = new MosaicDefinition(
+        PublicAccount.createWithPublicKey(account.publicKey),
+        new MosaicId(&quot;my-namespace&quot;, &quot;my-mosaic&quot;),
+        &quot;my test mosaic description&quot;,
+        new MosaicProperties(0, 9000000, true, true),
+        new MosaicLevy(
+            MosaicLevyType.Percentil,
+            account.address,
+            new MosaicId(&quot;nem&quot;, &quot;xem&quot;),
+            2
+        )
+    )
+</code></pre>
+
+<p>This defines</p>
+
+<ul>
+<li>a Mosaic named <code>my-mosaic</code>in the namespace <code>my-namespace</code>, with a description text</li>
+<li>a transferable Mosaic that is not divisible, has an initial supply of 9000000 that can be changed over time</li>
+<li>the levy applied to transfers of this Mosaic. The levy is paid in XEMs to the account creating the Mosaic. The amount of the levy is 2 ten-thousandths of the transfered value.</li>
+</ul>
+
+<p>This is the resulting object  m̀d`:</p>
+
+<pre><code>MosaicDefinition {
+  creator: 
+   PublicAccount {
+     address: 
+      Address {
+        value: 'TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G',
+        networkType: 152 },
+     publicKey: '4fe5efd97360bc8a32ec105d419222eeb714e6d06fd8b895a5eedda2b0edf931' },
+  id: 
+   MosaicId {
+     namespaceId: 'devguidetest.sub1.sub2',
+     name: 'devguide-mosaic' },
+  description: 'my test mosaic description',
+  properties: 
+   MosaicProperties {
+     initialSupply: 9000000,
+     supplyMutable: true,
+     transferable: true,
+     divisibility: 0 },
+  levy: 
+   MosaicLevy {
+     type: 2,
+     recipient: 
+      Address {
+        value: 'TA6XFSJYZYAIYP7FL7X2RL63647FRMB65YC6CO3G',
+        networkType: 152 },
+     mosaicId: MosaicId { namespaceId: 'nem', name: 'xem' },
+     fee: 2 },
+  metaId: undefined }
+
+
+</code></pre>
+
+<p>This MosaicDefinition instance can then be used in the creation of a <code>MosaicDefinitionCreationTransaction</code> to be advertised to the network:</p>
+
+<pre><code>    const mosaicDefinitionTransaction = MosaicDefinitionCreationTransaction.create(
+        TimeWindow.createWithDeadline(),
+        md
+    );
+</code></pre>
+
+<p>The advertisement of the transaction is done as for other transaction types:</p>
+
+<pre><code>    const signedTransaction = account.signTransaction(mosaicDefinitionTransaction);
+    transactionHttp.announceTransaction(signedTransaction).subscribe( x =&gt; console.log(x));
+</code></pre>
+
+<p>The complete code is:</p>
+
+<pre><code>import {
+    NEMLibrary, NetworkTypes, TimeWindow, Account, TransactionHttp,
+    MosaicDefinitionCreationTransaction, MosaicDefinition, PublicAccount, MosaicId, MosaicProperties, MosaicLevy,
+    MosaicLevyType
+} from &quot;nem-library&quot;;
+
+declare let process: any;
+
+// Initialize NEMLibrary for TEST_NET Network
+NEMLibrary.bootstrap(NetworkTypes.TEST_NET);
+
+const privateKey: string = process.env.PRIVATE_KEY;
+const account = Account.createWithPrivateKey(privateKey);
+const transactionHttp = new TransactionHttp();
+const md = new MosaicDefinition(
+        PublicAccount.createWithPublicKey(account.publicKey),
+        new MosaicId(&quot;devguidetest.sub1.sub2&quot;, &quot;devguide-mosaic&quot;),
+        &quot;mosaic description&quot;,
+        new MosaicProperties(0, 9000000, true, true),
+        new MosaicLevy(
+            MosaicLevyType.Percentil,
+            account.address,
+            new MosaicId(&quot;nem&quot;, &quot;xem&quot;),
+            2
+        )
+     );
+
+const mosaicDefinitionTransaction = MosaicDefinitionCreationTransaction.create(
+    TimeWindow.createWithDeadline(),
+    md
+);
+
+const signedTransaction = account.signTransaction(mosaicDefinitionTransaction);
+transactionHttp.announceTransaction(signedTransaction).subscribe( x =&gt; console.log(x));
+
+</code></pre>
+
+<h3 id="modifying-a-mosaic">Modifying a Mosaic</h3>
+
+<p>The NEM API has the best explanation about this, and it is copied verbatim here:</p>
+
+<p>There might be the need to alter a mosaic definition, either because you want to change the description or because you supplied faulty properties or faulty levy data. This is done simply by issuing another mosaic definition creation transaction as described above with the same mosaic id but different description/properties/levy. However there are some restriction when doing so:</p>
+
+<p>The description can be changed at any point even if the creator does not own the entire supply.
+Properties and the levy data can only be changed if the creator owns every single mosaic of that type. This is necessary to prevent the creator from secretly introducing a levy or inflating the mosaic by increasing the supply.
+Keep in mind that renewing the mosaic definition costs you the creation fee again, so it is worthwhile to double check the data before issuing the transaction.</p>
+
+<h3 id="mosaic-supply-change">Mosaic supply change</h3>
+
+<p>If you defined your Mosaic with a mutable supply, you can change the supply with a <code>MosaicSupplyChangeTransaction</code>.
+You initialise such a transaction with:</p>
+
+<ul>
+<li>the MosaicId (namespace and Mosaic name) of the Mosaic to update</li>
+<li>the type of your change: increase or decrease the supply</li>
+<li>the change in value to apply</li>
+</ul>
+
+<p>Here is an example creating the transaction:</p>
+
+<pre><code>import {
+    MosaicSupplyChangeTransaction, MosaicSupplyType
+} from &quot;nem-library&quot;;
+
+var tx = MosaicSupplyChangeTransaction.create(
+    TimeWindow.createWithDeadline(),
+    new MosaicId(&quot;my-namespace&quot;, &quot;my-mosaic&quot;),
+    MosaicSupplyType.Increase,
+    1000000);
+</code></pre>
+
+<p>This is the object created:</p>
+
+<pre><code>MosaicSupplyChangeTransaction {
+  type: 16386,
+  version: 1,
+  timeWindow: 
+   TimeWindow {
+     deadline: LocalDateTime { _date: [Object], _time: [Object] },
+     timeStamp: LocalDateTime { _date: [Object], _time: [Object] } },
+  signature: undefined,
+  signer: undefined,
+  transactionInfo: undefined,
+  mosaicId: 
+   MosaicId {
+     namespaceId: 'devguidetest.sub1.sub2',
+     name: 'devguide-mosaic' },
+  supplyType: 1,
+  delta: 1000000,
+  fee: 150000 }
+
+</code></pre>
+
+<p>This defines a transaction to update our mosaic, increasing its total supply by on million, resulting
+in a total supply of 10000000 after it has been broadcasted and accepted by the network.</p>
+
+<h3 id="requesting-mosaic-definition">Requesting Mosaic definition</h3>
+
+<p>nem-library lets you send request to the network to retrieve existing Mosaic definitions in a namespace.
+This is done with a MosaicHttp instance</p>
+
+<pre><code>import {
+    NEMLibrary, NetworkTypes, MosaicHttp, TransactionTypes
+} from &quot;nem-library&quot;;
+
+
+const mosaicHttp = new MosaicHttp();
+const namespace = &quot;devguidetest.sub1.sub2&quot;;
+
+mosaicHttp.getAllMosaicsGivenNamespace(namespace).subscribe(mosaicDefinitions =&gt; {
+	    console.log(mosaicDefinitions);
+});
+</code></pre>
+
+<p>Answers to this request have this format:</p>
+
+<pre><code>[ MosaicDefinition {
+    creator: 
+     PublicAccount {
+       address: [Object],
+       publicKey: '4fe5efd97360bc8a32ec105d419222eeb714e6d06fd8b895a5eedda2b0edf931' },
+    id: 
+     MosaicId {
+       namespaceId: 'devguidetest.sub1.sub2',
+       name: 'devguide-mosaic' },
+    description: 'my test mosaic description',
+    properties: 
+     MosaicProperties {
+       initialSupply: 9000000,
+       supplyMutable: true,
+       transferable: true,
+       divisibility: 0 },
+    levy: MosaicLevy { type: 2, recipient: [Object], mosaicId: [Object], fee: 2 },
+    metaId: 718 } ]
+
+</code></pre>
+
+<p>Note that these are parameters used at definition time. Changes in supply are not reflected!
+Nem-library does not yet support requesting current supply. It will soon though!</p>
+
+<h3 id="mosaic-transfers">Mosaic transfers</h3>
+
+<p>Transfering Mosaics rather than XEMs is a bit more difficult, but still very easy.
+You first initialise a <code>MosaicHttp</code> instance, which gives you the method <code>getMosaicTransferableWithAmount</code> taking a MosaicId and an amount.
+The trick is that the method <code>getMosaicTransferableWithAmount</code> returns an <code>Observable</code>, requiring you to subscribe to its return value to
+have access to the transferable mosaics?</p>
+
+<p>So we first need to initialise our <code>MosaicId</code>:</p>
+
+<pre><code>var namespace = &quot;devguidetest.sub1.sub2&quot;
+var mosaic = &quot;devguide-mosaic
+var mosaicId = new MosaicId(namespace, mosaic);
+</code></pre>
+
+<p>This can be passed to the call to <code>getMosaicTransferableWithAmount</code>.
+You subscribe on its return value to get access to the <code>transferable</code> Mosaics, which
+you can use in your code in curly braces:</p>
+
+<pre><code>mosaicHttp.getMosaicTransferableWithAmount( mosaicId, amount).subscribe( transferable =&gt; { ... });
+</code></pre>
+
+<p>The code in the curly braces needs to initialise a <code>TransferTransaction</code>, but for Mosaics, which is done with the method <code>createWithMosaics</code>:
+It takes as arguments the timewindow for setting the deadline, the recipient address, the transferable mosaics and a message:</p>
+
+<pre><code>                var transferTransaction: Transaction = TransferTransaction.createWithMosaics( 
+                                             TimeWindow.createWithDeadline(), 
+                                             new Address(&quot;TDK4QK-F7HBHE-AFTEUR-OFMCAF-JQGBZT-SZ2ZSG-ZKZM&quot;),
+                                             [transferable],  
+                                             EmptyMessage);
+
+</code></pre>
+
+<p>This transaction can then be signed and broadcasted as other transactions:</p>
+
+<pre><code>               const signedTransaction = account.signTransaction(transferTransaction);
+               transactionHttp.announceTransaction(signedTransaction).subscribe( x =&gt; console.log(x));
+</code></pre>
+
+<p>The complete code for this example is:</p>
+
+<pre><code>import {
+    NEMLibrary, NetworkTypes, Address, TransferTransaction, Transaction, TimeWindow,
+    EmptyMessage, MultisigTransaction, PublicAccount, TransactionHttp, XEM, MosaicHttp, MosaicId, Account
+} from &quot;nem-library&quot;;
+
+// Initialize NEMLibrary for TEST_NET Network
+NEMLibrary.bootstrap(NetworkTypes.TEST_NET);
+
+
+const privateKey: string = &quot;$YOUR_PRIVATE_KEY&quot;;
+const account = Account.createWithPrivateKey(privateKey);
+
+const mosaicHttp = new MosaicHttp();
+const transactionHttp = new TransactionHttp();
+
+var namespace = &quot;devguidetest.sub1.sub2&quot;
+var mosaic = &quot;devguide-mosaic&quot;
+var amount = 1
+
+var mosaicId = new MosaicId(namespace, mosaic);
+
+mosaicHttp.getMosaicTransferableWithAmount( mosaicId, amount).subscribe( transferable =&gt;  {
+                var transferTransaction: Transaction = TransferTransaction.createWithMosaics( 
+                                             TimeWindow.createWithDeadline(), 
+					     new Address(&quot;TDK4QK-F7HBHE-AFTEUR-OFMCAF-JQGBZT-SZ2ZSG-ZKZM&quot;), 
+					     [transferable], 
+					     EmptyMessage);
+                // sign and broadcast
+                const signedTransaction = account.signTransaction(transferTransaction);
+                transactionHttp.announceTransaction(signedTransaction).subscribe( x =&gt; console.log(x));
+});
+</code></pre>
 
 
       
