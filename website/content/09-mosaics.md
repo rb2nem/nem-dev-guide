@@ -436,3 +436,77 @@ Note that these are parameters used at definition time. Changes in supply are no
 Nem-library does not yet support requesting current supply. It will soon though!
 
 ### Mosaic transfers
+
+Transfering Mosaics rather than XEMs is a bit more difficult, but still very easy.
+You first initialise a `MosaicHttp` instance, which gives you the method `getMosaicTransferableWithAmount` taking a MosaicId and an amount.
+The trick is that the method `getMosaicTransferableWithAmount` returns an `Observable`, requiring you to subscribe to its return value to 
+have access to the transferable mosaics?
+
+So we first need to initialise our `MosaicId`:
+
+```
+var namespace = "devguidetest.sub1.sub2"
+var mosaic = "devguide-mosaic
+var mosaicId = new MosaicId(namespace, mosaic);
+```
+
+This can be passed to the call to `getMosaicTransferableWithAmount`.
+You subscribe on its return value to get access to the `transferable` Mosaics, which 
+you can use in your code in curly braces:
+```
+mosaicHttp.getMosaicTransferableWithAmount( mosaicId, amount).subscribe( transferable => { ... });
+```
+
+The code in the curly braces needs to initialise a `TransferTransaction`, but for Mosaics, which is done with the method `createWithMosaics`:
+It takes as arguments the timewindow for setting the deadline, the recipient address, the transferable mosaics and a message:
+```
+                var transferTransaction: Transaction = TransferTransaction.createWithMosaics( 
+                                             TimeWindow.createWithDeadline(), 
+                                             new Address("TDK4QK-F7HBHE-AFTEUR-OFMCAF-JQGBZT-SZ2ZSG-ZKZM"),
+                                             [transferable],  
+                                             EmptyMessage);
+
+```
+
+This transaction can then be signed and broadcasted as other transactions:
+
+```
+               const signedTransaction = account.signTransaction(transferTransaction);
+               transactionHttp.announceTransaction(signedTransaction).subscribe( x => console.log(x));
+```
+
+The complete code for this example is:
+```
+import {
+    NEMLibrary, NetworkTypes, Address, TransferTransaction, Transaction, TimeWindow,
+    EmptyMessage, MultisigTransaction, PublicAccount, TransactionHttp, XEM, MosaicHttp, MosaicId, Account
+} from "nem-library";
+
+// Initialize NEMLibrary for TEST_NET Network
+NEMLibrary.bootstrap(NetworkTypes.TEST_NET);
+
+
+const privateKey: string = "$YOUR_PRIVATE_KEY";
+const account = Account.createWithPrivateKey(privateKey);
+
+const mosaicHttp = new MosaicHttp();
+const transactionHttp = new TransactionHttp();
+
+var namespace = "devguidetest.sub1.sub2"
+var mosaic = "devguide-mosaic"
+var amount = 1
+
+var mosaicId = new MosaicId(namespace, mosaic);
+
+mosaicHttp.getMosaicTransferableWithAmount( mosaicId, amount).subscribe( transferable =>  {
+                var transferTransaction: Transaction = TransferTransaction.createWithMosaics( 
+                                             TimeWindow.createWithDeadline(), 
+					     new Address("TDK4QK-F7HBHE-AFTEUR-OFMCAF-JQGBZT-SZ2ZSG-ZKZM"), 
+					     [transferable], 
+					     EmptyMessage);
+                // sign and broadcast
+                const signedTransaction = account.signTransaction(transferTransaction);
+                transactionHttp.announceTransaction(signedTransaction).subscribe( x => console.log(x));
+});
+```
+
