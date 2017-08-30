@@ -818,7 +818,26 @@ It takes as arguments the timewindow for setting the deadline, the recipient add
                transactionHttp.announceTransaction(signedTransaction).subscribe( x =&gt; console.log(x));
 </code></pre>
 
-<p>The complete code for this example is:</p>
+<p>An alternative form, proposed by aleix, author of nem-library, is chaining method calls in a reactive way, as
+encouraged by RxJS:</p>
+
+<pre><code>               mosaicHttp.getMosaicTransferableWithAmount(mosaicId, amount)
+                   .map(mosaicTransferable =&gt; TransferTransaction.createWithMosaics(
+                       TimeWindow.createWithDeadline(),
+                       new Address(&quot;TDK4QK-F7HBHE-AFTEUR-OFMCAF-JQGBZT-SZ2ZSG-ZKZM&quot;),
+                       [mosaicTransferable],
+                       EmptyMessage
+                   ))
+                   .map(transferTransaction =&gt; account.signTransaction(transferTransaction))
+                   .flatMap(signedTransaction =&gt; transactionHttp.announceTransaction(signedTransaction))
+                   .subscribe(announceTransactionResult =&gt; {
+                       console.log(&quot;Result&quot;, announceTransactionResult)
+                   });
+</code></pre>
+
+<p>This has the same result.</p>
+
+<p>To conclude, here is the complete code for this example:</p>
 
 <pre><code>import {
     NEMLibrary, NetworkTypes, Address, TransferTransaction, Transaction, TimeWindow,
