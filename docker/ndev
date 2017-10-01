@@ -139,6 +139,12 @@ handle_config_file() {
 # makes sure we have consistent data with cmd
 handle_command() {
 	case $1 in
+	  tsc)
+	    container="tools"
+	        ;;
+	  node)
+	    container="tools"
+	      ;;
 	  ts-node)
 	    container="tools"
 	    ;;

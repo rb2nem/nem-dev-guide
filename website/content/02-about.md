@@ -69,15 +69,18 @@ The tools container also mounts a host directory. This allows you to edit your c
 host while still easily compile in the container. By default, the directory in which to put your code in is `./code`.
 You can then compile your code from the host with
 ```
-./ndev -c tools tsc code/myfile.tsc
+./ndev tsc code/myfile.tsc
 ```
 and then run it with 
 ```
-./ndev -c tools node code/myfile.js
+./ndev node code/myfile.js
 ```
 
-You can also use tsc inside the container to compile your typescript to javascript and then run it with nodejs:
+You can also use tsc inside the container to compile your typescript to javascript and then run it with nodejs, 
+but remember to always put your code under the diretory `code` or you'll loose your files at the next shutdown!
 ```
+ndev -c tools bash
+cd code
 tsc mycode.ts
 node mycode.js
 ```
