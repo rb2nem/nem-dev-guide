@@ -438,17 +438,20 @@ This will work</p>
 host while still easily compile in the container. By default, the directory in which to put your code in is <code>./code</code>.
 You can then compile your code from the host with</p>
 
-<pre><code>./ndev -c tools tsc code/myfile.tsc
+<pre><code>./ndev tsc code/myfile.tsc
 </code></pre>
 
 <p>and then run it with</p>
 
-<pre><code>./ndev -c tools node code/myfile.js
+<pre><code>./ndev node code/myfile.js
 </code></pre>
 
-<p>You can also use tsc inside the container to compile your typescript to javascript and then run it with nodejs:</p>
+<p>You can also use tsc inside the container to compile your typescript to javascript and then run it with nodejs,
+but remember to always put your code under the diretory <code>code</code> or you&rsquo;ll loose your files at the next shutdown!</p>
 
-<pre><code>tsc mycode.ts
+<pre><code>ndev -c tools bash
+cd code
+tsc mycode.ts
 node mycode.js
 </code></pre>
 
