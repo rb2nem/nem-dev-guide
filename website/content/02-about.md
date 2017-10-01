@@ -65,6 +65,17 @@ import {Account, MultisigTransaction, TimeWindow,
         Transaction, TransactionTypes} from "nem-library";
 ```
 
+The tools container also mounts a host directory. This allows you to edit your code in you favourite editor on the
+host while still easily compile in the container. By default, the directory in which to put your code in is `./code`.
+You can then compile your code from the host with
+```
+./ndev -c tools tsc code/myfile.tsc
+```
+and then run it with 
+```
+./ndev -c tools node code/myfile.js
+```
+
 You can also use tsc inside the container to compile your typescript to javascript and then run it with nodejs:
 ```
 tsc mycode.ts
@@ -110,6 +121,7 @@ captured with tcpdump in the nis container.
 The first time you run the script, it will:
 
 * check if its settings.sh file exists, and create it if needed. The user is prompted for values to be provided.
+* check if the directory mounted to the container for sharing code with the host (by default `./code`) exists, and create it if needed.
 * check if the required docker-compose.yml file is present, and download it [from github](https://github.com/rb2nem/nem-dev-guide/blob/master/docker/docker-compose.yml) if needed
 * Download docker [images from the DockerHub](https://hub.docker.com/r/rb2nem/nem-dev-guide/)
 
@@ -120,7 +132,9 @@ You can also run a command in the containers, by passing the command as argument
 in the tools container, where mitm is running.
 Open a shell in the tools container: `ndev bash`.
 You can select the container in which to run the command with the option `-c` or `--container`. To open a shell in the NIS container,
-simply run `ndev -c nis bash`.
+simply run `ndev -c nis bash`. The `-c` flag also applies to stopping containers. To stop the `nis` container only, issue the command
+`./ndev -c nis -s`. The flag `-s` is actually toggling the running state of the container, so issuing the same command again will start 
+the container again.
 
 Processes in the containers are managed with [supervisord](http://supervisord.org/). You can manually control NIS. For example, to stop
 nis, simply issue `ndev -c nis supervisorctl start nis`. To get an overview of the processes running in a container, user the command 

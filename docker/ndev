@@ -29,6 +29,8 @@ usage() {
 	The command can be run without flags or commands. In that case it will:
 	    * if missing, create $script_dir/settings.sh, prompting the user for values
 	    * if missing, download the docker-compose.yml to $script_dir
+	    * if missing, create the directory where you store your code, also available in the
+	         tools container. By default it is '$tools_dir'.
 	    * start the containers
 	The user running $0 needs to have the right to start and stop docker containers.
 
@@ -107,6 +109,15 @@ handle_args() {
     done
 }
 
+container_name() {
+    container=$1
+    echo $(eval "echo \$${container}_container")
+}
+
+service_name() {
+    container=$1
+    echo nemdev${container}
+}
 
 handle_config_file() {
     # we store the persistent data location for ease
@@ -226,7 +237,21 @@ if [[ $state -eq 1 ]] ; then
 fi
 
 if [[ $shutdown -eq 1 ]] ; then
-    docker-compose down
+    # if we pass a container, check if it is running, and set action accordingly
+    if [[ -n $container ]]; then
+        check_running_containers
+        set -x
+        if [[ $(eval "echo \$${container}_container") == "" ]]; then
+            action="up -d"
+        else
+            action="stop"
+        fi
+        docker-compose $action $(service_name $container)
+        # if we stop the container, also remove it
+        [[ $action == "stop" ]] && docker-compose rm -f $(service_name $container)
+    else
+        docker-compose down
+    fi
     exit
 fi
 # make args consistent with command
@@ -236,5 +261,5 @@ set_docker_user_flag
 start_containers
 if [[ -n "$cmd" ]]; then
 set -x
-  docker exec ${docker_user_flag} -it $(eval "echo \$${container}_container") bash -i -c "$cmd"
+  docker exec ${docker_user_flag} -it $(container_name $container) bash -i -c "$cmd"
 fi
