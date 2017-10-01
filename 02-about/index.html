@@ -434,6 +434,18 @@ This will work</p>
         Transaction, TransactionTypes} from &quot;nem-library&quot;;
 </code></pre>
 
+<p>The tools container also mounts a host directory. This allows you to edit your code in you favourite editor on the
+host while still easily compile in the container. By default, the directory in which to put your code in is <code>./code</code>.
+You can then compile your code from the host with</p>
+
+<pre><code>./ndev -c tools tsc code/myfile.tsc
+</code></pre>
+
+<p>and then run it with</p>
+
+<pre><code>./ndev -c tools node code/myfile.js
+</code></pre>
+
 <p>You can also use tsc inside the container to compile your typescript to javascript and then run it with nodejs:</p>
 
 <pre><code>tsc mycode.ts
@@ -479,6 +491,7 @@ captured with tcpdump in the nis container.</p>
 
 <ul>
 <li>check if its settings.sh file exists, and create it if needed. The user is prompted for values to be provided.</li>
+<li>check if the directory mounted to the container for sharing code with the host (by default <code>./code</code>) exists, and create it if needed.</li>
 <li>check if the required docker-compose.yml file is present, and download it <a href="https://github.com/rb2nem/nem-dev-guide/blob/master/docker/docker-compose.yml">from github</a> if needed</li>
 <li>Download docker <a href="https://hub.docker.com/r/rb2nem/nem-dev-guide/">images from the DockerHub</a></li>
 </ul>
@@ -490,7 +503,9 @@ You can also run a command in the containers, by passing the command as argument
 in the tools container, where mitm is running.
 Open a shell in the tools container: <code>ndev bash</code>.
 You can select the container in which to run the command with the option <code>-c</code> or <code>--container</code>. To open a shell in the NIS container,
-simply run <code>ndev -c nis bash</code>.</p>
+simply run <code>ndev -c nis bash</code>. The <code>-c</code> flag also applies to stopping containers. To stop the <code>nis</code> container only, issue the command
+<code>./ndev -c nis -s</code>. The flag <code>-s</code> is actually toggling the running state of the container, so issuing the same command again will start
+the container again.</p>
 
 <p>Processes in the containers are managed with <a href="http://supervisord.org/">supervisord</a>. You can manually control NIS. For example, to stop
 nis, simply issue <code>ndev -c nis supervisorctl start nis</code>. To get an overview of the processes running in a container, user the command
