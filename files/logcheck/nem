@@ -1,0 +1,33 @@
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} INFO
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} SEVERE INDIRECT
+##### Peers erros #####
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} SEVERE DIRECT fatal error encountered while communicating with <Node .*>: java.util.concurrent.CompletionException: org.nem.core.connect.FatalPeerException: org.apache.http.ConnectionClosedException: Connection closed \(org.nem.peer.services.NodeRefresher a\)
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING Timer BROADCAST raised exception: org.nem.core.connect.FatalPeerException: org.apache.http.ConnectionClosedException: Connection closed
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING Timer SYNC raised exception: org.nem.core.connect.BusyPeerException:
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING Timer SYNC raised exception: org.nem.core.connect.FatalPeerException: org.apache.http.ConnectionClosedException: Connection closed
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING Timer UPDATE NODE EXPERIENCES raised exception: org.nem.core.connect.FatalPeerException: org.apache.http.ConnectionClosedException: Connection closed
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING Timer TIME SYNCHRONIZATION raised exception: org.nem.core.connect.FatalPeerException: org.apache.http.ConnectionClosedException: Connection closed
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING Timer SYNC raised exception: org.nem.core.connect.InactivePeerException: java.net.ConnectException
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING Timer FORAGING raised exception: org.hibernate.PessimisticLockException: could not extract ResultSet
+##### Other messages #####
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING [A-Z0-9]{40}: network time offset to local node is -?[[:digit:]]+ms \(org.nem.nis.time.synchronization.DefaultTimeSynchronizationStrategy a\)
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING Timer FORAGING raised exception: java.lang.IllegalArgumentException: importance not set at wanted height
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} SEVERE Handshake failed due to invalid Upgrade header: null \(org.springframework.web.socket.server.support.DefaultHandshakeHandler handleInvalidUpgradeHeader\)
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING updateChain: last block changed. Update not possible \(org.nem.nis.sync.BlockChainUpdater c\)
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING Timer TIME SYNCHRONIZATION raised exception: java.lang.NullPointerException
+##### No certificate found, ok for non-ssl nodes #####
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING no certificate found for \(file:.*nem-deploy-[[:digit:].].*.jar <no signer certificates>\) \(org.nem.core.metadata.CodeSourceFacade <init>\)
+##### Transactions too old #####
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING Transaction from [1-Z0-9]{40} rejected \((FAILURE_PAST_DEADLINE|FAILURE_INSUFFICIENT_BALANCE)\) \(org.nem.nis.harvesting.DefaultUnconfirmedState h\)
+##### Startup time messages #####
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING auto-booting
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING auto-booted! \(org.nem.nis.NisMain b\)
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING Can't perform any actions until db is fully loaded; currently at height [[:digit:]]+ .*
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} SEVERE Http Status Code 503: NIS_ILLEGAL_STATE_LOADING_CHAIN \(org.nem.core.connect.ErrorResponse <init>\)
+[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2} [[:digit:]]{2}:[[:digit:]]{2}:[[:digit:]]{2}.[[:digit:]]{3} WARNING context ================== current: [[:digit:]]+ \(org.nem.nis.NisMain init\)
+##### followup lines of long messages #####
+^	at 
+^	... [[:digit:]]+ more
+^Caused by:
+^java\.util
+^ \(org.nem.core.async.NemAsyncTimerVisitor notifyOperationCompleteExceptionally\)
