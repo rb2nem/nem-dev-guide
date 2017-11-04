@@ -1,6 +1,6 @@
 +++
 prev = "08-multisig-accounts"
-next = "80-debugging"
+next = "10-offline-signer"
 weight = 80
 title = "Namespaces and Mosaics"
 toc = true

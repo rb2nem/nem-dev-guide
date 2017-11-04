@@ -1,5 +1,5 @@
 +++
-prev = "09-mosaics"
+prev = "10-offline-signer"
 next = "90-snippets"
 weight = 800
 title = "Debugging"
