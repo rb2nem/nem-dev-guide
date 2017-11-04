@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="https://rb2nem.github.io/nem-dev-guide/images/favicon.png" type="image/x-icon" />
 
     
-    <title>Managing and using multisig accounts</title>
+    <title>Developing an application</title>
     <link href="https://rb2nem.github.io/nem-dev-guide//css/nucleus.css" rel="stylesheet">
     <link href="https://rb2nem.github.io/nem-dev-guide//css/font-awesome.min.css" rel="stylesheet">
     <link href="https://rb2nem.github.io/nem-dev-guide//css/hybrid.css" rel="stylesheet">
@@ -27,7 +27,7 @@
 <link rel="stylesheet" type="text/css" href="https://rb2nem.github.io/nem-dev-guide/css/tabs.css">
 
   </head>
-  <body class="" data-url="/08-multisig-accounts/">
+  <body class="" data-url="/10-offline-signer/">
     <nav id="sidebar">
   <div id="header-wrapper">
     <div id="header">
@@ -213,7 +213,7 @@
           
           
           
-            <li class="dd-item active" data-nav-id="/08-multisig-accounts/">
+            <li class="dd-item " data-nav-id="/08-multisig-accounts/">
               <a href="https://rb2nem.github.io/nem-dev-guide/08-multisig-accounts/">
                 <span>Managing and using multisig accounts     </i></span>
               </a>
@@ -229,7 +229,7 @@
           
           
           
-            <li class="dd-item " data-nav-id="/10-offline-signer/">
+            <li class="dd-item active" data-nav-id="/10-offline-signer/">
               <a href="https://rb2nem.github.io/nem-dev-guide/10-offline-signer/">
                 <span>Developing an application     </i></span>
               </a>
@@ -294,7 +294,7 @@
                 
                 
               <div id="top-github-link">
-                  <a class="github-link" href="https://github.com/rb2nem/nem-dev-guide/edit/master/website/content/08-multisig-accounts.md" target="blank">
+                  <a class="github-link" href="https://github.com/rb2nem/nem-dev-guide/edit/master/website/content/10-offline-signer.md" target="blank">
                     <i class="fa fa-code-fork"></i>
                     Edit this page
                   </a>
@@ -315,7 +315,7 @@
                 
                   
                 
-                <span itemprop="title"> Managing and using multisig accounts</span>
+                <span itemprop="title"> Developing an application</span>
               </div>
               
                   <div class="progress">
@@ -324,9 +324,13 @@
 <ul>
 <li>
 <ul>
-<li><a href="#converting-to-multisig">Converting to multisig</a></li>
-<li><a href="#modifying-the-multisig">Modifying the multisig</a></li>
-<li><a href="#signing-multisig-transactions">Signing multisig transactions</a></li>
+<li><a href="#security-consideration">Security consideration</a></li>
+<li><a href="#offline-signer">Offline signer</a>
+<ul>
+<li><a href="#dependencies">Dependencies</a></li>
+<li><a href="#window-content">Window content</a></li>
+<li><a href="#code">Code</a></li>
+</ul></li>
 </ul></li>
 </ul>
 </nav>
@@ -339,325 +343,294 @@
             
     	        <div id="body-inner">
                 
-                <h1>Managing and using multisig accounts</h1>
+                <h1>Developing an application</h1>
                 
 
 
 
-<p>When an account is created, it is unisig, meaning that it is fully independant, and controls its funds independently from other accounts.
-A multisig account on the other hand, does not have control over its funds and assets. Only the cosignatories of the multisig can
-initiate transactions for the account, as illustrated in <a href="https://rb2nem.github.io/nem-dev-guide/06-transaction-transfer/#multisig-transactions">the transfer transactions section</a>.</p>
+<p>In this chapter we will develop a small application: an offline transfer transactions signer for the test network.
+It will consist of a desktop application built on Electron, that will let you generate and a transaction
+without network connection. It is a way to secure a private key from being compromised. Adapting the applications
+to work on the main net is trivial (we will underline what minor changes are needed).</p>
 
-<p>A multisig account is labeled as n-of-m, meaning to m cosignatories have been added, and that at least the quorim of n of them have to accept a transaction
-for it to be included in the blockchain.</p>
+<p>When the signed transaction has been generated, it needs to be broadcasted to the network. That will be done
+from an Android application. The Android application will scan a QR-code displayed by the desktop application, and
+will send the encoded transaction to the NEM network.</p>
 
-<p>Cosignatories can be added (one or multiple at a time), removed (one at a time) and the quorum of cosignatories can be modified.</p>
+<h2 id="security-consideration">Security consideration</h2>
 
-<p>Note that to remove a cosignatory, the cosignatory removed is not allowed required to accept the transaction in case of a n-of-n account!
-This means that a 2-of-2 account can be converted to a 1-of-1 account by any of the cosignatories. Keep that in mind, when creating a
-multisig account!</p>
+<p>It is interesting to note that, if a multisig transaction is generated by the desktop app and another co-signatory is required
+to sign the transaction for it to go through, and the co-signatory signing the transaction
+has no fund, the user can use this application without the need of trusting the developer of the application.</p>
 
-<p>An account with a quorum of 0 means all cosignatories have to sign a transaction.</p>
+<p>As another co-signatory needs to sign the transaction, you/he/she can check that the broadcated transaction is what was meant.
+Even if the desktop application were infected with malware, it wouldn&rsquo;t be able to fraudulously transfer funds.
+And as the Android application is simply a broadcaster of the scanned transaction, it doesn&rsquo;t and can&rsquo;t compromise the transfer of
+funds.</p>
 
-<h2 id="converting-to-multisig">Converting to multisig</h2>
+<h2 id="offline-signer">Offline signer</h2>
 
-<p>Before converting an account to multisig, you need ensure to be sure it holds enough XEMs to pay for the conversion fee. The cosignatories
-must have initiated confirmed transaction in the past so that their public keys are published on the blockchain.</p>
+<p>To develop our desktop offline signer, we will use the <a href="https://github.com/electron/electron-quick-start">electron-quick-start</a> as a base.
+We will follow their instructions to install it:</p>
 
-<p>From the nem api documentation, the fee is <code>10 + 6 * number of modifications + 6 (if a min cosignatory change is involved)</code>.
-As we convert a unisig account to a multisig, the number of minimum cosignatory is changing and the last part applies.
-For example, to convert an account to a 2-of-3 multisig, the fee will be: 10 + 3 * 6 + 6 = 34. The account converted to 2-of-3 multisig
-must hold at least 34 XEMs. Fees will evolve with the price of XEMS. Always check the latest info in the official NEM documentation, and
-edit this page (link in top right corner) if updates are required.</p>
-
-<p>We will look at an example provided by <a href="http://nemlibrary.com">nem-library</a>. It is coded in Typescript and uses nemlibrary.
-First all required classes are imported:</p>
-
-<pre><code>import {
-    AccountHttp, NEMLibrary, NetworkTypes, Address, Account, TransferTransaction, TimeWindow,
-    EmptyMessage, MultisigTransaction, PublicAccount, TransactionHttp, XEM, MultisigAggregateModificationTransaction,
-    CosignatoryModification, CosignatoryModificationAction
-} from &quot;nem-library&quot;;
+<pre><code># Clone this repository
+git clone https://github.com/electron/electron-quick-start
+# Go into the repository
+cd electron-quick-start
+# Install dependencies
+npm install
+# Run the app
+npm start
 </code></pre>
 
-<p>With everything imported, we can bootstrap the network (here the testnet) and specify which NIS we want to send the transaction to:</p>
+<p>If all went well, the last step opens an empty window. This is the base application we will build on.</p>
 
-<pre><code>nemlibrary.bootstrap(networktypes.test_net);
-const transactionhttp = new TransactionHttp({domain: &quot;104.128.226.60&quot;});
-</code></pre>
+<h3 id="dependencies">Dependencies</h3>
 
-<p>The nem-library examples use environment variables to set key parameters. In your own code you can replace
-<code>process.env.XXX</code> by a string <code>&quot;my_key&quot;</code> whose value is the key.
-<code>PRIVATE_KEY</code> is the private key of the account converted to multisig. For cosignatories,
-the public key has to be provided.</p>
+<p>We first add our dependencies: nem-library, rxjs (for nem-library) and qrcode (to display the transaction as a qrcode).
+You add them in <code>package.json</code>, just after the <code>devDependencies</code> entry, like this:</p>
 
-<pre><code>const privateKey: string = process.env.PRIVATE_KEY;
-const cosignatory1PublicKey: string = process.env.COSIGNATORY_1_PUBLIC_KEY;
-const cosignatory2PublicKey: string = process.env.COSIGNATORY_2_PUBLIC_KEY;
-</code></pre>
-
-<p>Once all parameters have been set, we can create the transaction that will convert our account into multisig.
-The first argument is a <a href="https://nemlibrary.com/guide/overview/">timewindow</a>, setting the deadline of the transaction.
-The second argument is an array holding the cosignatories modification. In our case, as we convert an account to multisig,
-we only add cosignatories.
-The last argument is the number of cosignatories required to accept a transaction for it to be committed to the blockchain.</p>
-
-<pre><code>const convertIntoMultisigTransaction = MultisigAggregateModificationTransaction.create(
-    TimeWindow.createWithDeadline(),
-    [
-        new CosignatoryModification(cosignatory1, CosignatoryModificationAction.ADD),
-        new CosignatoryModification(cosignatory2, CosignatoryModificationAction.ADD),
-    ],
-    2
-);
+<pre><code>  &quot;devDependencies&quot;: {
+    &quot;electron&quot;: &quot;~1.7.8&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;nem-library&quot;: &quot;~0.10.0&quot;,
+    &quot;rxjs&quot;: &quot;~5.5.0&quot;,
+    &quot;qrcode&quot;: &quot;~0.9.0&quot;
+   }
 
 </code></pre>
 
-<p>At this time, all that&rsquo;s left to do is sign the transaction and announce it to the network.</p>
+<p>You can see the diff of <a href="https://github.com/rb2nem/electron-quick-start/commit/41d4d0a51964ae3d63720806a627c1acdc93004f">this commit</a> on Github.</p>
 
-<pre><code>const signedTransaction = account.signTransaction(convertIntoMultisigTransaction);
-transactionHttp.announceTransaction(signedTransaction).subscribe(x =&gt; console.log(x));
+<p>Now run the command</p>
+
+<pre><code>npm install
 </code></pre>
 
-<p>Once this transaction is included in the blockchain, the converted account is a multisig account. That means
-transactions from that account can only be initiated by a cosignatory.</p>
+<p>to install all new dependencies.</p>
 
-<p>Here is the complete code:</p>
+<h3 id="window-content">Window content</h3>
 
-<pre><code>import {
-    AccountHttp, NEMLibrary, NetworkTypes, Address, Account, TransferTransaction, TimeWindow,
-    EmptyMessage, MultisigTransaction, PublicAccount, TransactionHttp, XEM, MultisigAggregateModificationTransaction,
-    CosignatoryModification, CosignatoryModificationAction
-} from &quot;nem-library&quot;;
+<p>We then edit the <code>index.html</code> file. This is the content of the application&rsquo;s window. We need to add input fields to get the data required to
+instanciate a transaction. These are:</p>
 
-// Initialize NEMLibrary for TEST_NET Network
-nemlibrary.bootstrap(networktypes.test_net);
+<ul>
+<li>the signer&rsquo;s private key</li>
+<li>the recipient of the transfer</li>
+<li>the amount of XEMs transferred</li>
+<li>the message of the transaction</li>
+<li>to be able to sign multisig transactions, we will also include a field for the multisig account&rsquo;s public key</li>
+</ul>
 
-const transactionhttp = new TransactionHttp({domain: &quot;104.128.226.60&quot;});
+<p>Edit the <code>index.html</code> file. You can remove everything inside the <code>&lt;body&gt;</code> tag, except for the <code>&lt;script&gt;</code> tag, which
+should be left in place, at the bottom.</p>
 
-// Replace with the private key of the account that you want to convert into multisig
-const privateKey: string = process.env.PRIVATE_KEY;
-const cosignatory1PublicKey: string = process.env.COSIGNATORY_1_PUBLIC_KEY;
-const cosignatory2PublicKey: string = process.env.COSIGNATORY_2_PUBLIC_KEY;
+<p>In the body tag, we add this old school, table-based, HTML:</p>
 
-const account = Account.createWithPrivateKey(privateKey);
-
-const cosignatory1 = PublicAccount.createWithPublicKey(cosignatory1PublicKey);
-const cosignatory2 = PublicAccount.createWithPublicKey(cosignatory2PublicKey);
-
-const convertIntoMultisigTransaction = MultisigAggregateModificationTransaction.create(
-    TimeWindow.createWithDeadline(),
-    [
-        new CosignatoryModification(cosignatory1, CosignatoryModificationAction.ADD),
-        new CosignatoryModification(cosignatory2, CosignatoryModificationAction.ADD),
-    ],
-    2
-);
-
-const signedTransaction = account.signTransaction(convertIntoMultisigTransaction);
-
-transactionHttp.announceTransaction(signedTransaction).subscribe(x =&gt; console.log(x));
-</code></pre>
-
-<h2 id="modifying-the-multisig">Modifying the multisig</h2>
-
-<p>Once an account is converted to multisig, it cannot itself initiate a transaction, only a cosignatory can,
-as already illustrated in the <a href="https://rb2nem.github.io/nem-dev-guide/06-transaction-transfer">transfer transactions</a> section. The same applies for
-changes to the multisig account like the number of cosignatories (adding and removing), or the minimum number
-of signatures required.</p>
-
-<p>Hence, to modify a multisig account, one of the cosignatories has to initiate a <code>MultisigAggregateModificationTransaction</code>,
-which will add or remove cosignatories, wrap it in a multisig transaction specifying the multisig account it applies to,
-and finally sign and send it to a NIS.</p>
-
-<p>Here is how we can add a third cosignatory.
-The imports and network initialisation are identical to the previous example.
-However, the private key to use is from the current cosignatory that will initiate the transaction.
-And both the multisig account we modify and the cosignatory to be added are identified by their respective
-public keys.</p>
-
-<pre><code>import { AccountHttp, NEMLibrary, NetworkTypes, Address, Account, TransferTransaction, TimeWindow, EmptyMessage, MultisigTransaction, PublicAccount, TransactionHttp, XEM, MultisigAggregateModificationTransaction, CosignatoryModification, CosignatoryModificationAction } from &quot;nem-library&quot;;
-
-// private key of current cosignatory initiating the transaction
-const privateKey: string = &quot;current_cosignatory_private_key&quot;;
-// public key of the cosignatory to be added
-const cosignatory3PublicKey: string = &quot;3eee54c75945d22500f1c6844b175b9efc9db171e2e941704fa396dc6ecd2ffd&quot;;
-// public key of the multisig account we modify
-const multisigPublicKey: string = &quot;2382b88894b9697b227125fbaff8069dd41c75ed279c841781e1bea389fe488d&quot;;
-
-
-// Initialize NEMLibrary for TEST_NET Network
-NEMLibrary.bootstrap(NetworkTypes.TEST_NET);
-
-const transactionHttp = new TransactionHttp({domain: &quot;localhost&quot;});
-
-const account = Account.createWithPrivateKey(privateKey);
-
-const cosignatory3 = PublicAccount.createWithPublicKey(cosignatory3PublicKey);
+<pre><code>&lt;table&gt;
+&lt;tr&gt;&lt;td&gt;signer private key:&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;text&quot; id=&quot;pk&quot; size=&quot;64&quot;/&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;recipient:&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;text&quot; id=&quot;recipient&quot; size=&quot;64&quot;/&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;amount:&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;text&quot; id=&quot;amount&quot;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;message:&lt;/td&gt;&lt;td&gt;
+    &lt;textarea id=&quot;msg&quot;&gt;&lt;/textarea&gt;
+&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Multisig public key:&lt;/td&gt;&lt;td&gt;&lt;input type=&quot;text&quot; id=&quot;msig_pubkey&quot; size=&quot;64&quot;/&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;button id=&quot;send&quot;&gt;SEND&lt;/button&gt;&lt;/td&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
 
 </code></pre>
 
-<p>We then create a <code>MultisigAggregateModificationTransaction</code> similarly to the previous example.
-We add the new cosignatory, and increase the minimum number of signature required by the multisig account by 1.</p>
+<p>With this information provided, we will generated the transfer transaction, sign it with the private key provided, and
+serialise it to be broadcasted to the network. This JSON serialised transaction will then be displayed as text and as
+ a QR code. The HTML to display both is a <code>div</code> to display the JSON, and a canvas to display the QR-code:</p>
 
-<pre><code>const cosignatory3 = PublicAccount.createWithPublicKey(cosignatory3PublicKey);
-
-const modifyMultisigTransaction = MultisigAggregateModificationTransaction.create(
-    TimeWindow.createWithDeadline(),
-    [
-        new CosignatoryModification(cosignatory3, CosignatoryModificationAction.ADD),
-    ],
-    1
-);
+<pre><code>&lt;div style=&quot;width:100%;&quot;&gt;
+    &lt;div id=&quot;result&quot; style=&quot;width:75%;word-wrap:break-word;&quot;&gt;
+    &lt;/div&gt;
+    &lt;canvas id=&quot;canvas&quot;&gt;
+    &lt;/canvas&gt;
+&lt;/div&gt;
 </code></pre>
 
-<p>This transaction has to be broadcasted in the name of the multisig account, but the multisig account cannot
-initiate a transaction itself. We have to wrap it in a multisig account. The last argument for which multisig account
-this transaction is initiate:</p>
-
-<pre><code>const multisigTransaction: MultisigTransaction = MultisigTransaction.create(
-    TimeWindow.createWithDeadline(),
-    modifyMultisigTransaction,
-    PublicAccount.createWithPublicKey(multisigPublicKey)
-);
+<p>You can see the diff of <a href="https://github.com/rb2nem/electron-quick-start/commit/991318a57736de0c5844ba5825b7b54f52e63169">this commit</a> on Github.
+This results in this window content:</p>
 
 
+<figure >
+    
+        <img src="https://rb2nem.github.io/nem-dev-guide/images/app_signer_window_fields.png" />
+    
+    
+    <figcaption>
+        <h4>Offline Signer Window</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>And this is what needs to be tweaked in the application&rsquo;s window content. You
+can of course further change the content of the <code>index.html</code> file to better
+suit your needs and taste. We will however focus on the code needed to make this app work.</p>
+
+<h3 id="code">Code</h3>
+
+<p>We will start by removing the menu, which we don&rsquo;t use.
+This is done by editing the file <code>main.js</code> and adding the line</p>
+
+<pre><code>mainWindow.setMenu(null);
+</code></pre>
+
+<p>right after the initialisation of the main window in the function <code>createWindow</code>.</p>
+
+<p>You can see the diff of <a href="https://github.com/rb2nem/electron-quick-start/commit/91f34638efa62c3b87ef8838e0c79d131d7f5a66">this commit</a> on Github.</p>
+
+<p>It is also in <code>main.js</code> that you can activate the developer tools, which are
+invaluable when you want to debug your application. To have the developers tools
+active, just be sure that this line is not commented:</p>
+
+<pre><code>mainWindow.webContents.openDevTools()
+</code></pre>
+
+<p>Here is a screenshot of our app with the dev tool opened:
+
+<figure >
+    
+        <img src="https://rb2nem.github.io/nem-dev-guide/images/app_dev_tools.png" />
+    
+    
+    <figcaption>
+        <h4>Developer tools</h4>
+        
+    </figcaption>
+    
+</figure>
+</p>
+
+<p>But the bulk of our code is in the file <code>rendered.js</code>.
+We start by requiring all dependencies:</p>
+
+<pre><code>const $ = require('jquery');
+const nemLibrary = require(&quot;nem-library&quot;);
+const NEMLibrary = nemLibrary.NEMLibrary,
+    Address = nemLibrary.Address,
+    NetworkTypes = nemLibrary.NetworkTypes,
+    TimeWindow = nemLibrary.TimeWindow,
+    TransferTransaction = nemLibrary.TransferTransaction,
+    MultisigTransaction = nemLibrary.MultisigTransaction,
+    TransactionHttp = nemLibrary.TransactionHttp,
+    XEM = nemLibrary.XEM,
+    EmptyMessage = nemLibrary.EmptyMessage,
+    Account = nemLibrary.Account,
+    PublicAccount = nemLibrary.PublicAccount,
+    PlainMessage = nemLibrary.PlainMessage;
+const QRCode = require('qrcode');
+</code></pre>
+
+<p>We will use jquery in our code, to access elements of the interface we defined
+in <code>index.html</code>, and all other lines are nem-library elements we will use.</p>
+
+<p>The first this with nem-library is to bootstrap the environment for the network we will use:</p>
+
+<pre><code>NEMLibrary.bootstrap(NetworkTypes.TEST_NET);
+</code></pre>
+
+<p>In our case, it will always be the testnet, but should you want to work on the mainnet, this is the
+only line you would change. A final application would probably display a dropdown list or a radio button
+to select the network for which to generate the transaction.</p>
+
+<p>We can now write the code to generate the signed transaction and display it as string and qr-code.
+We will put this code in the function <code>computeSignedTransaction</code>.</p>
+
+<p>We start by extracting values entered by the user:</p>
+
+<pre><code>        var privateKey = $(&quot;#pk&quot;).val();
+        var recipient =  $(&quot;#recipient&quot;).val();
+        var amount =  $(&quot;#amount&quot;).val();
+        var message = $(&quot;#msg&quot;).val();
+        var msig_pubkey = $(&quot;#msig_pubkey&quot;).val();
+</code></pre>
+
+<p>With this info, we can create the transfer transaction:</p>
+
+<pre><code>       let transferTransaction = TransferTransaction.create(
+           TimeWindow.createWithDeadline(),
+           new Address(recipient),
+           new XEM(amount),
+           PlainMessage.create(message)
+       );
+</code></pre>
+
+<p>We wanted to also support initiating multisig transactions.
+With nem library, handling a multisig transaction is just a question of
+wrapping the transfer transaction with a MultisigTransaction.
+We will do this only if a public key of the multisig account is provided,
+resuting in this code:</p>
+
+<pre><code>       // tx will be the transaction signed.
+       // if multisig, it is reassigned below
+       let tx = transferTransaction;
+    
+       // if we have a public key, create a multisig transaction
+       if (msig_pubkey!=&quot;&quot;) {
+               tx = MultisigTransaction.create(
+                   TimeWindow.createWithDeadline(),
+                   transferTransaction,
+                   PublicAccount.createWithPublicKey(msig_pubkey)
+               );
+       } 
+</code></pre>
+
+<p>We can then sign the transaction with the account for which we received
+the private key from the user. We immediately stringify the JSON of the
+signed transaction:</p>
+
+<pre><code>       let account = Account.createWithPrivateKey(privateKey);
+       let signedTransaction = account.signTransaction(tx);
+       let text=JSON.stringify(signedTransaction);
+</code></pre>
+
+<p>Now we have the text to display. We set the transaction text ad the content of the div with id <code>result</code>:</p>
+
+<pre><code>       $(&quot;#result&quot;).html(text);
 
 </code></pre>
 
-<p>This transaction can now be signed by a current cosignatory, and sent to NIS:</p>
+<p>and we display it as qrcode:</p>
 
-<pre><code>const signedTransaction = account.signTransaction(multisigTransaction);
-transactionHttp.announceTransaction(signedTransaction).subscribe(x =&gt; console.log(x));
-</code></pre>
-
-<p>Here is the complete code:</p>
-
-<pre><code>import { AccountHttp, NEMLibrary, NetworkTypes, Address, Account, TransferTransaction, TimeWindow, EmptyMessage, MultisigTransaction, PublicAccount, TransactionHttp, XEM, MultisigAggregateModificationTransaction, CosignatoryModification, CosignatoryModificationAction } from &quot;nem-library&quot;;
-
-// private key of current cosignatory initiating the transaction
-const privateKey: string = &quot;current_cosignatory_private_key&quot;;
-// public key of the cosignatory to be added
-const cosignatory3PublicKey: string = &quot;3eee54c75945d22500f1c6844b175b9efc9db171e2e941704fa396dc6ecd2ffd&quot;;
-// public key of the multisig account we modify
-const multisigPublicKey: string = &quot;2382b88894b9697b227125fbaff8069dd41c75ed279c841781e1bea389fe488d&quot;;
-
-
-// Initialize NEMLibrary for TEST_NET Network
-NEMLibrary.bootstrap(NetworkTypes.TEST_NET);
-
-const transactionHttp = new TransactionHttp({domain: &quot;localhost&quot;});
-
-const account = Account.createWithPrivateKey(privateKey);
-
-const cosignatory3 = PublicAccount.createWithPublicKey(cosignatory3PublicKey);
-
-const modifyMultisigTransaction = MultisigAggregateModificationTransaction.create(
-    TimeWindow.createWithDeadline(),
-    [
-        new CosignatoryModification(cosignatory3, CosignatoryModificationAction.ADD),
-    ],
-    1
-);
-
-// wrap in a multisig transaction
-
-const multisigTransaction: MultisigTransaction = MultisigTransaction.create(
-    TimeWindow.createWithDeadline(),
-    modifyMultisigTransaction,
-    PublicAccount.createWithPublicKey(multisigPublicKey)
-);
-
-
-
-const signedTransaction = account.signTransaction(multisigTransaction);
-
-transactionHttp.announceTransaction(signedTransaction).subscribe(x =&gt; console.log(x));
-</code></pre>
-
-<h2 id="signing-multisig-transactions">Signing multisig transactions</h2>
-
-<p>When using a multisig account, you will not only want to initiate transactions like we did in the <a href="06-transaction-transfer/#multisig-transactions">transfer transactions section</a>, you will also want to sign transactions initiated by others. That is what we will do in this section, using nem-library.</p>
-
-<p>We will write a script that will
-* get all unconfirmed transaction from the multisig account
-* filter to keep only the multisig transactions
-* filter to keep only the transactions pending to be signed and not having our signature yet present</p>
-
-<p>For each of these transactions, it will
-* create a MultisigSignatureTransaction instance for the transaction
-* sign it, which will add us in the signers that have accepted the transaction
-* send it to the network.</p>
-
-<p>All these steps are done by chaining calls to functions working on the array of transactions we receive.
-These functions take as argument a function that will be applied to each element of the array, and return a new array, on which the next
-function can be called.
-Calling <code>filter</code> on a array will return an array containing only elements for which the function passed as argument returns true.
-For example, calling this on an array of transactions will return an array holding only the multisig transactions:</p>
-
-<pre><code>my_array.filter(transaction =&gt; transaction.type == TransactionTypes.MULTISIG)
-</code></pre>
-
-<p>The function <code>map</code> will map each element of the array to the result of the call of the function passed as argument. This means the array returned
-has the same lenght as the array on which the function <code>map</code> is called.</p>
-
-<p>For example, this call on an array of transactions will sing the transactions, and return an array of signed transactions:</p>
-
-<pre><code>my_array.map(transaction =&gt; signer.signTransaction(transaction))
-</code></pre>
-
-<p>With these explanations, you should be able to understand the following code. The interesting code is after the comment <code>handle unconfirmed transactions</code>.</p>
-
-<pre><code>import {Account, MultisigTransaction, TimeWindow, Transaction, TransactionTypes, AccountHttp, Address, NEMLibrary, NetworkTypes, MultisigSignatureTransaction, Transact
-ionHttp} from &quot;nem-library&quot;;
-
-NEMLibrary.bootstrap(NetworkTypes.TEST_NET);
-
-const accountHttp = new AccountHttp();
-const transactionHttp = new TransactionHttp({domain: &quot;localhost&quot;});
-
-// signer1
-const signerKey:string = &quot;SIGNER_PRIVATE_KEY&quot;;
-const signerPubKey:string = &quot;61a2896696fef452d001299f279567aacc79706c2b2c899f9dec70e0b92eb6b6&quot;
-const multisigAddress:string = &quot;TARZB5-LXSVCB-3PO52A-JU2TBS-6TAONI-NY5AIF-LPWH&quot;;
-const signer = Account.createWithPrivateKey(signerKey);
-
-//--------------------------------
-// handle unconfirmed transactions
-//--------------------------------
-accountHttp.unconfirmedTransactions(new Address(multisigAddress))
-    // flatten array so we work with Transactions, and not arrays
-    .flatMap(x =&gt; x)
-    // keep only multisig transactions
-    .filter(transaction =&gt; transaction.type == TransactionTypes.MULTISIG)
-    // keep only pending to sign transaction that don't have our signature
-    .filter((transaction: MultisigTransaction)  =&gt; transaction.isPendingToSign()
-                           &amp;&amp; transaction.signatures
-                           &amp;&amp; ! transaction.signatures.map( (s:MultisigSignatureTransaction) =&gt; { return s.signer.publicKey}).some((s:string , index,array) =&gt; { return
- s==signerPubKey})
-    )
-    // create for each transaction selected a MultisigSignatureTransaction
-    .map((transaction: MultisigTransaction): MultisigSignatureTransaction =&gt; MultisigSignatureTransaction.create(
-        TimeWindow.createWithDeadline(),
-        transaction.otherTransaction.signer!.address,
-        transaction.hashData!
-    ))
-    // sign the MultisigSignatureTransaction
-    .map(transaction =&gt; signer.signTransaction(transaction))
-    // announce the signed transaction
-    .map(signedTransaction =&gt; transactionHttp.announceTransaction(signedTransaction))
-    // then print the result
-    .subscribe(result =&gt; {
-        // Listen the success
-        console.log(&quot;success&quot;);
-        console.log(result);
-    }, err =&gt; {
-        // Know if something has gone wrong
-        console.log(&quot;error&quot;);
-        console.error(err)
-    });
+<pre><code>       var canvas = document.getElementById('canvas')
+        
+       QRCode.toCanvas(canvas,text, function (error) {
+         if (error) console.error(error)
+       })
 
 </code></pre>
+
+<p>The only thing left to do is attaching our function to the click of button <code>send</code>:</p>
+
+<pre><code>$(&quot;#send&quot;).on('click', computeSignedTransaction);
+</code></pre>
+
+<p>That&rsquo;s really all there is.</p>
+
+<p>You can see the diff of <a href="https://github.com/rb2nem/electron-quick-start/commit/4a498f31adb1a30c659548aaeb9040f2f91101f3">this commit</a> on Github.</p>
+
+<p>Here is an example of a signed transaction:</p>
+
+
+<figure >
+    
+        <img src="https://rb2nem.github.io/nem-dev-guide/images/app_signer.png" />
+    
+    
+    <figcaption>
+        <h4>Offline Signer Result</h4>
+        
+    </figcaption>
+    
+</figure>
+
 
 
       
@@ -666,8 +639,8 @@ accountHttp.unconfirmedTransactions(new Address(multisigAddress))
 
     <div id="navigation">
         
-        <a class="nav nav-prev" href="https://rb2nem.github.io/nem-dev-guide/07-monitoring-blockchain"> <i class="fa fa-chevron-left"></i></a>
-        <a class="nav nav-next" href="https://rb2nem.github.io/nem-dev-guide/09-mosaics" style="margin-right: 0px;"><i class="fa fa-chevron-right"></i></a>
+        <a class="nav nav-prev" href="https://rb2nem.github.io/nem-dev-guide/09-mosaics"> <i class="fa fa-chevron-left"></i></a>
+        <a class="nav nav-next" href="https://rb2nem.github.io/nem-dev-guide/80-debugging" style="margin-right: 0px;"><i class="fa fa-chevron-right"></i></a>
     </div>
 
     </section>
