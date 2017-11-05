@@ -1,0 +1,36 @@
+{
+  "name": "electron-quick-start",
+  "version": "1.0.0",
+  "description": "A minimal Electron application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/electron/electron-quick-start",
+  "keywords": [
+    "Electron",
+    "quick",
+    "start",
+    "tutorial",
+    "demo"
+  ],
+  "author": "GitHub",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-combine": "~0.8.3",
+    "grunt-lineending": "~0.2.4",
+    "grunt-browserify": "5.2.0",
+    "grunt-exec": "3.0.0",
+    "uglify-js":"3.1.7",
+    "uglify-js-es6":"2.8.9",
+    "browserify": "14.5.0"
+
+  },
+  "dependencies": {
+    "nem-library": "~0.10.0",
+    "rxjs": "~5.5.0",
+    "qrcode": "~0.9.0",
+    "jquery": "3.2.1"
+   }
+}
