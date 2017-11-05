@@ -325,11 +325,17 @@
 <li>
 <ul>
 <li><a href="#security-consideration">Security consideration</a></li>
-<li><a href="#offline-signer">Offline signer</a>
+<li><a href="#electron-offline-signer">Electron Offline signer</a>
 <ul>
 <li><a href="#dependencies">Dependencies</a></li>
 <li><a href="#window-content">Window content</a></li>
 <li><a href="#code">Code</a></li>
+</ul></li>
+<li><a href="#single-file-offline-signer">Single file offline signer</a>
+<ul>
+<li><a href="#step-1">Step 1</a></li>
+<li><a href="#step-2">Step 2</a></li>
+<li><a href="#step-3">Step 3</a></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -368,7 +374,7 @@ Even if the desktop application were infected with malware, it wouldn&rsquo;t be
 And as the Android application is simply a broadcaster of the scanned transaction, it doesn&rsquo;t and can&rsquo;t compromise the transfer of
 funds.</p>
 
-<h2 id="offline-signer">Offline signer</h2>
+<h2 id="electron-offline-signer">Electron Offline signer</h2>
 
 <p>To develop our desktop offline signer, we will use the <a href="https://github.com/electron/electron-quick-start">electron-quick-start</a> as a base.
 We will follow their instructions to install it:</p>
@@ -631,6 +637,140 @@ signed transaction:</p>
     
 </figure>
 
+
+<h2 id="single-file-offline-signer">Single file offline signer</h2>
+
+<p>If using electron might bring some advantages when the application evolves, in the current state
+the added value of using the Electron platform is small. Couldn&rsquo;t we make it a single html file
+to be downloaded and opened in the browser? The answer is yes, let&rsquo;s see how we can do it!</p>
+
+<p>The first tool we will use is <a href="https://www.npmjs.com/package/browserify">Browserify</a>, which
+lets you use the node&rsquo;s <code>require</code> in the browser. From its own description:</p>
+
+<pre><code>browserify will recursively analyze all the require() calls in your app in order to build a bundle you can serve up to the browser in a single &lt;script&gt; tag
+</code></pre>
+
+<p>This leads to a 5MB bundle that we can bring down to 3.3MB by minifying the javascript file.
+Once we have the javascript, we can include it in the <code>index.html</code> file as the content of the <code>script</code> tag.</p>
+
+<p>There is not a lot of complexity in these steps, but it is cumbersome and error-prone, so we will automate it.
+We will use <a href="https://gruntjs.com/">Grunt</a> as our automation tool.
+The steps to automate are:
+- bundle all modules used in one javascript file. This is done with browserify.
+- minify the javascript file, with uglify
+- include the javascript in the <code>index.html</code> file, which is supported by grunt-combine.</p>
+
+<p>Let&rsquo;s first update the <code>devDependencies</code> to this:</p>
+
+<pre><code>  &quot;devDependencies&quot;: {
+    &quot;grunt&quot;: &quot;~0.4.1&quot;,
+    &quot;grunt-combine&quot;: &quot;~0.8.3&quot;,
+    &quot;grunt-browserify&quot;: &quot;5.2.0&quot;,
+    &quot;grunt-exec&quot;: &quot;3.0.0&quot;,
+    &quot;uglify-js&quot;:&quot;3.1.7&quot;,
+    &quot;uglify-js-es6&quot;:&quot;2.8.9&quot;,
+    &quot;browserify&quot;: &quot;14.5.0&quot;
+  }
+</code></pre>
+
+<p>The Gruntfile has this format:</p>
+
+<pre><code>var packageObject = require('./package.json');
+  
+module.exports = function (grunt) {
+        // Project configuration.
+        grunt.initConfig({
+                pkg: grunt.file.readJSON('package.json'),
+                module1: {
+                        step: {
+                                option: &quot;value&quot;,...
+                        }
+                      
+                }, ...
+        });             
+
+        grunt.file.defaultEncoding = 'utf-8';
+        grunt.loadNpmTasks(&quot;plugin&quot;);
+        grunt.registerTask(&quot;default&quot;, [&quot;module1&quot;,...]);
+};               
+</code></pre>
+
+<h3 id="step-1">Step 1</h3>
+
+<p>The browserify task is</p>
+
+<pre><code>browserify: {
+                scripts: {
+                        src: &quot;src/renderer.js&quot;,
+                        dest: &quot;tmp/renderer.browserified.js&quot;
+                }
+            }
+</code></pre>
+
+<p>It requires the plugin <code>grunt-browserify</code>, hence we add it to the bottom of the Gruntfile:</p>
+
+<pre><code>grunt.loadNpmTasks('grunt-browserify');
+</code></pre>
+
+<p>This will run the <code>browserify</code> command on the file <code>src/renderer.js</code> and generate the file <code>tmp/renderer.browserified.js</code></p>
+
+<h3 id="step-2">Step 2</h3>
+
+<p>To minimize the javascript, we use uglify, but we need it to support the ES6 syntax. That&rsquo;s why we added both <code>uglify-js</code>
+and <code>uglify-js-es6</code> to the dev dependencies. And it is why we don&rsquo;t use the grunt plugin for uglify, as the released version doesn&rsquo;t yest
+support ES6 syntax. We need to specify the command to run. This is done with</p>
+
+<pre><code>exec: { 
+        uglify: 'uglifyjs tmp/renderer.browserified.js &gt; tmp/renderer.uglified.js'
+}
+</code></pre>
+
+<p>and including the needed plugin:</p>
+
+<pre><code>grunt.loadNpmTasks('grunt-exec');
+</code></pre>
+
+<h3 id="step-3">Step 3</h3>
+
+<p>Finally, we can integrate the javascript file in the html file with the <code>combine</code> functionality of Grunt.
+This functionality is simply replacing tokens in a file by the content of another file. To make it work,
+we edit the <code>index.html</code> file and put the token <code>//bundle.js</code> as somle content of the <code>script</code> tag:</p>
+
+<pre><code>&lt;script type=&quot;text/javascript&quot;&gt;
+//bundle.js     
+&lt;/script&gt;
+</code></pre>
+
+<p>We then define the <code>combine</code> task to replace the token <code>bundle.js</code> but the content of the minified file:</p>
+
+<pre><code>combine: {
+        single: {
+                input: &quot;src/index.html&quot;,
+                output: &quot;dist/offline_signer.html&quot;,
+                tokens: [
+                        { token: &quot;//bundle.js&quot;, file: &quot;./tmp/renderer.uglified.js&quot; },
+                ]
+        }
+}
+</code></pre>
+
+<p>As for other steps, we include the combine plugin:</p>
+
+<pre><code>grunt.loadNpmTasks(&quot;grunt-combine&quot;);
+</code></pre>
+
+<p>The complete Gruntfile is <a href="https://github.com/rb2nem/single_file_signer/blob/master/Gruntfile.js">available on github</a>.</p>
+
+<p>To build the single file NEM transaction signer, simply do</p>
+
+<pre><code>git clone https://github.com/rb2nem/single_file_signer.git
+cd single_file_signer
+npm install
+grunt
+</code></pre>
+
+<p>Open the file <code>dist/offline_signer.html</code>, and you have the same functionality as in the Electron application.
+A version is available online at <a href="https://rb2nem.github.io/single_file_signer/">https://rb2nem.github.io/single_file_signer/</a>.</p>
 
 
       
