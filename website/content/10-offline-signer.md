@@ -380,7 +380,8 @@ The complete Gruntfile is [available on github](https://github.com/rb2nem/nem-de
 
 The complete code is available unde the directory [files/single_file_signer](https://github.com/rb2nem/nem-dev-guide/tree/master/files/single_file_signer) of [this repository](https://github.com/rb2nem/nem-dev-guide).
 
-The HTML file built is also in the repository at [files/single_file_signer/dist/offline_signer.html](https://github.com/rb2nem/nem-dev-guide/blob/master/files/single_file_signer/dist/offline_signer.html). You can also open it in your browser from [html/single_file_signer/offline_signer.html](/html/single_file_signer/offline_signer.html). 
+The HTML file built is also in the repository at [files/single_file_signer/dist/offline_signer.html](https://github.com/rb2nem/nem-dev-guide/blob/master/files/single_file_signer/dist/offline_signer.html). You can also [open it in your browser](/html/single_file_signer/offline_signer.html) as served from this website. 
+
 To build the single file NEM transaction signer, simply go in that directory and do
 ```
 git clone https://github.com/rb2nem/nem-dev-guide.git
@@ -391,4 +392,3 @@ grunt
 
 Open the file `dist/offline_signer.html`, and you have the same functionality as in the Electron application.
 
-A version is available online at [https://rb2nem.github.io/single_file_signer/](https://rb2nem.github.io/single_file_signer/).
