@@ -6,6 +6,9 @@ title = "Debugging"
 toc = true
 +++
 ## Debugging REST API requests
+
+### With the devguide containers
+
 The docker environment accompanying this guide provides [mitmweb](http://docs.mitmproxy.org/en/stable/mitmweb.html) to inspect requests sent to
 the NIS instance running in the container. This section will show how to use it.
 
@@ -109,6 +112,51 @@ resp=RestClient.post 'http://localhost:7890/block/at/public', {'height': 243}.to
 => <RestClient::Response 200 "{\"timeStamp...">
 ```
 Sure enough! We now successfully debugged and sent a request from Ruby.
+
+
+### With Postman
+
+[Postman](https://www.getpostman.com/) is a desktop application letting you setup and send out http requests, helping you 
+debug or explore eg REST APIs.
+
+After starting Postman, you get a window with a text field to enter a URL and a send button:
+
+{{< figure src="/images/debugging_postman_start.png" title="Postman Start Window" >}}
+
+It defaults to sending a GET request. Let's try it out with the request to get the current chain height.
+As a reminder (see [blockchain requests](04-blockchain-requests)), this is a GET request sent to `/chain_height`.
+Entering the URL `62.75.171.41:7890/chain/height` and clicking `Send` results in this state:
+
+{{< figure src="/images/debugging_postman_get.png" title="Postman Get Request" >}}
+
+
+But Postman really shines when you want to test a POST request, such as we did in the previous section, to get the block 
+at a certain height. We need to send out a [POST request to /block/at/public](https://bob.nem.ninja/docs/#getting-a-block-with-a-given-height), 
+with the height requested [sent as json in the request's body](https://bob.nem.ninja/docs/#blockHeight).
+
+Creating a new tab, we can enter the needed info in Postman:
+
+{{< figure src="/images/debugging_postman_post1.png" title="Postman Post Request" >}}
+
+
+Clicking send results in an error message in the response, stating text/plain content type not being supported:
+
+
+{{< figure src="/images/debugging_postman_error1.png" title="Postman Post Request Error" >}}
+
+We can however specify a `application.json` content type to be set. This is specified in the HTTP header `Content-Type`,
+hence we open the Headers tab, and add the said header. There is autocomplete available for the key and the value, so
+just typing `content` in the key field will list all headers Postman knows that contain `content`. For the value, you can just type
+`json` and you'll get the `application/json` suggestion. Here's the status before pressing send:
+
+{{< figure src="/images/debugging_postman_content_type.png" title="Postman Post Request Content-Type" >}}
+
+With these adjustments, we press send and get the successful answer:
+
+{{< figure src="/images/debugging_postman_result.png" title="Postman Post Request Content-Type" >}}
+
+This is a valuable tool that can help you explore the API, tweaking parameters of a request until
+it works, and then incorporating what you leant in your application.
 
 ## Debugging Websockets
 Debugging websockets is not as accessible as debugging your HTTP requests. There's no perfect solution, and we will debug 
