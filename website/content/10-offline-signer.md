@@ -392,3 +392,129 @@ grunt
 
 Open the file `dist/offline_signer.html`, and you have the same functionality as in the Electron application.
 
+## Mobile transaction broadcaster
+
+Now that we have the signed transaction, we need to broadcast it to the network. This is done by sending a POST request to a NIS 
+and path  `/transaction/announce` with the transaction as payload. The application hence just has to scan the QR-code, and 
+send a POST request to a NIS. We will do it on Android, and we will base our app on the [BarcodeReaderSample](https://github.com/varvet/BarcodeReaderSample)
+of [Github user varvet](https://github.com/varvet). This example application is under the MIT license, making is a good start for your own applications.
+
+As this application only just scans a value that it then sends in a POST request, developing a similar solution for IOS should require
+the same amount of effort.
+
+The BarcodeReaderSample only scans the code, but we need to send it in an HTTP POST request. The first thing to do is enable our application
+to access the network. This is done by adding the following line in `app/src/main/AndroidManifest.xml`:
+
+```
+<uses-permission android:name="android.permission.INTERNET"/>
+``` 
+
+An attention point for Android is that [no network operation is accepted on the main thread]( https://stackoverflow.com/questions/6343166/how-do-i-fix-android-os-networkonmainthreadexception). 
+You need to place your network accessing code in an [AsyncTask](https://developer.android.com/reference/android/os/AsyncTask.html), 
+running its code in background without requiring you to manage threads.
+
+We define our AsyncTask in `app/src/main/java/com/varvet/barcodereadersample/AnnounceTransactionTask.java`.
+
+We will pass 2 parameters to the AsyncTask:
+- the URL to which we want to post the transaction
+- the serialised transaction we just scanned
+
+These parameters are stored in variables `url` and tx respectively:
+
+```
+        URL url = new URL(params[0]);
+        String tx= params[1];
+```
+
+
+This is not an Android development tutorial, so we won't detail the usage of
+the Android development and debugging tools. You still might be interested to know
+we used Android Studio for this code, and that the calls to `android.util.Log.i` 
+log the string at the info level, which are accessible in Android Studio when [running
+the app on the phone over USB](https://developer.android.com/studio/run/device.html).
+
+Sending the HTTP POST request with the transaction as payload is done with this code:
+
+```
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        conn.setDoOutput(true);
+        conn.setChunkedStreamingMode(0);
+        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+
+        OutputStream stream = new java.io.BufferedOutputStream(conn.getOutputStream());
+        OutputStreamWriter wr = new OutputStreamWriter(stream);
+        wr.write(postData);
+```
+
+We can then look at the result and the response we get from the server:
+
+```
+	int status = conn.getResponseCode();
+```
+
+According to the result, we need to read the input stream in case of succes, or the error stream
+otherwise:
+
+```
+        java.io.InputStream in;
+        if(status >= HttpURLConnection.HTTP_BAD_REQUEST)
+            in = conn.getErrorStream();
+        else
+            in = conn.getInputStream();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+```
+
+We can then read the response, and close the stream reader:
+
+```
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+
+        // Read Server Response
+        while ((line = reader.readLine()) != null) {
+            // Append server response in string
+            sb.append(line + "\n");
+        }
+
+
+        String text = sb.toString();
+        reader.close();
+```
+
+This response can then be displayed to the user, or logged. We don't do that in this
+example.
+
+We still need to close the connection though:
+
+```
+        conn.disconnect();
+```
+
+Now we need to call this AsyncTask from the main activity of the appl which 
+is defined in `app/src/main/java/com/varvet/barcodereadersample/MainActivity.java`.
+
+We modify the code to store the scanned value in a `String` instance:
+
+```
+	String tx = barcode.displayValue;
+```
+
+and then we call our AsyncTask:
+
+```
+	new AnnounceTransactionTask().execute("http://104.128.226.60:7890/transaction/announce", tx);
+```
+
+We hardcode the server to a testnet NIS. This could be a setting of the app. During the 
+development of this example, the NIS url was set to the IP address of the host running the
+[devguide docker containers](03-setting-up-environment). 
+This allowed to [debug the POST resquest sent](80-debugging/#debugging-rest-api-requests).
+
+You can find all the changes applied to the base QR code scanner application in [this commi](https://github.com/rb2nem/BarcodeReaderSample/commit/650dff95808f7595ca83b5064b3bf06f202cd80d).
+
+A similar application we developed by [github user Antownee](https://github.com/Antownee).
+It also has a [signer](https://github.com/Antownee/nem-transaction-signer-ionic) and a 
+[multi-platform broadcaster](https://github.com/Antownee/nem-transaction-broadcaster-ionic).
+You might want to take a look at his code too, as well as the accompanying [blog post](https://blog.nem.io/hot-cold-wallet/).
