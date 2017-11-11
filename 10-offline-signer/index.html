@@ -337,6 +337,7 @@
 <li><a href="#step-2">Step 2</a></li>
 <li><a href="#step-3">Step 3</a></li>
 </ul></li>
+<li><a href="#mobile-transaction-broadcaster">Mobile transaction broadcaster</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -774,6 +775,123 @@ grunt
 </code></pre>
 
 <p>Open the file <code>dist/offline_signer.html</code>, and you have the same functionality as in the Electron application.</p>
+
+<h2 id="mobile-transaction-broadcaster">Mobile transaction broadcaster</h2>
+
+<p>Now that we have the signed transaction, we need to broadcast it to the network. This is done by sending a POST request to a NIS
+and path  <code>/transaction/announce</code> with the transaction as payload. The application hence just has to scan the QR-code, and
+send a POST request to a NIS. We will do it on Android, and we will base our app on the <a href="https://github.com/varvet/BarcodeReaderSample">BarcodeReaderSample</a>
+of <a href="https://github.com/varvet">Github user varvet</a>. This example application is under the MIT license, making is a good start for your own applications.</p>
+
+<p>As this application only just scans a value that it then sends in a POST request, developing a similar solution for IOS should require
+the same amount of effort.</p>
+
+<p>The BarcodeReaderSample only scans the code, but we need to send it in an HTTP POST request. The first thing to do is enable our application
+to access the network. This is done by adding the following line in <code>app/src/main/AndroidManifest.xml</code>:</p>
+
+<pre><code>&lt;uses-permission android:name=&quot;android.permission.INTERNET&quot;/&gt;
+</code></pre>
+
+<p>An attention point for Android is that <a href="https://stackoverflow.com/questions/6343166/how-do-i-fix-android-os-networkonmainthreadexception">no network operation is accepted on the main thread</a>.
+You need to place your network accessing code in an <a href="https://developer.android.com/reference/android/os/AsyncTask.html">AsyncTask</a>,
+running its code in background without requiring you to manage threads.</p>
+
+<p>We define our AsyncTask in <code>app/src/main/java/com/varvet/barcodereadersample/AnnounceTransactionTask.java</code>.</p>
+
+<p>We will pass 2 parameters to the AsyncTask:
+- the URL to which we want to post the transaction
+- the serialised transaction we just scanned</p>
+
+<p>These parameters are stored in variables <code>url</code> and tx respectively:</p>
+
+<pre><code>        URL url = new URL(params[0]);
+        String tx= params[1];
+</code></pre>
+
+<p>This is not an Android development tutorial, so we won&rsquo;t detail the usage of
+the Android development and debugging tools. You still might be interested to know
+we used Android Studio for this code, and that the calls to <code>android.util.Log.i</code>
+log the string at the info level, which are accessible in Android Studio when <a href="https://developer.android.com/studio/run/device.html">running
+the app on the phone over USB</a>.</p>
+
+<p>Sending the HTTP POST request with the transaction as payload is done with this code:</p>
+
+<pre><code>        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        conn.setDoOutput(true);
+        conn.setChunkedStreamingMode(0);
+        conn.setRequestProperty(&quot;Content-Type&quot;, &quot;application/json; charset=UTF-8&quot;);
+
+        OutputStream stream = new java.io.BufferedOutputStream(conn.getOutputStream());
+        OutputStreamWriter wr = new OutputStreamWriter(stream);
+        wr.write(postData);
+</code></pre>
+
+<p>We can then look at the result and the response we get from the server:</p>
+
+<pre><code>	int status = conn.getResponseCode();
+</code></pre>
+
+<p>According to the result, we need to read the input stream in case of succes, or the error stream
+otherwise:</p>
+
+<pre><code>        java.io.InputStream in;
+        if(status &gt;= HttpURLConnection.HTTP_BAD_REQUEST)
+            in = conn.getErrorStream();
+        else
+            in = conn.getInputStream();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+</code></pre>
+
+<p>We can then read the response, and close the stream reader:</p>
+
+<pre><code>        StringBuilder sb = new StringBuilder();
+        String line = null;
+
+        // Read Server Response
+        while ((line = reader.readLine()) != null) {
+            // Append server response in string
+            sb.append(line + &quot;\n&quot;);
+        }
+
+
+        String text = sb.toString();
+        reader.close();
+</code></pre>
+
+<p>This response can then be displayed to the user, or logged. We don&rsquo;t do that in this
+example.</p>
+
+<p>We still need to close the connection though:</p>
+
+<pre><code>        conn.disconnect();
+</code></pre>
+
+<p>Now we need to call this AsyncTask from the main activity of the appl which
+is defined in <code>app/src/main/java/com/varvet/barcodereadersample/MainActivity.java</code>.</p>
+
+<p>We modify the code to store the scanned value in a <code>String</code> instance:</p>
+
+<pre><code>	String tx = barcode.displayValue;
+</code></pre>
+
+<p>and then we call our AsyncTask:</p>
+
+<pre><code>	new AnnounceTransactionTask().execute(&quot;http://104.128.226.60:7890/transaction/announce&quot;, tx);
+</code></pre>
+
+<p>We hardcode the server to a testnet NIS. This could be a setting of the app. During the
+development of this example, the NIS url was set to the IP address of the host running the
+<a href="03-setting-up-environment">devguide docker containers</a>.
+This allowed to <a href="80-debugging/#debugging-rest-api-requests">debug the POST resquest sent</a>.</p>
+
+<p>You can find all the changes applied to the base QR code scanner application in <a href="https://github.com/rb2nem/BarcodeReaderSample/commit/650dff95808f7595ca83b5064b3bf06f202cd80d">this commi</a>.</p>
+
+<p>A similar application we developed by <a href="https://github.com/Antownee">github user Antownee</a>.
+It also has a <a href="https://github.com/Antownee/nem-transaction-signer-ionic">signer</a> and a
+<a href="https://github.com/Antownee/nem-transaction-broadcaster-ionic">multi-platform broadcaster</a>.
+You might want to take a look at his code too, as well as the accompanying <a href="https://blog.nem.io/hot-cold-wallet/">blog post</a>.</p>
 
 
       
