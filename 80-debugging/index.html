@@ -324,7 +324,11 @@
 <ul>
 <li>
 <ul>
-<li><a href="#debugging-rest-api-requests">Debugging REST API requests</a></li>
+<li><a href="#debugging-rest-api-requests">Debugging REST API requests</a>
+<ul>
+<li><a href="#with-the-devguide-containers">With the devguide containers</a></li>
+<li><a href="#with-postman">With Postman</a></li>
+</ul></li>
 <li><a href="#debugging-websockets">Debugging Websockets</a>
 <ul>
 <li><a href="#with-google-chrome">With Google Chrome</a></li>
@@ -348,6 +352,8 @@
 
 
 <h2 id="debugging-rest-api-requests">Debugging REST API requests</h2>
+
+<h3 id="with-the-devguide-containers">With the devguide containers</h3>
 
 <p>The docker environment accompanying this guide provides <a href="http://docs.mitmproxy.org/en/stable/mitmweb.html">mitmweb</a> to inspect requests sent to
 the NIS instance running in the container. This section will show how to use it.</p>
@@ -514,6 +520,119 @@ resp=RestClient.post 'http://localhost:7890/block/at/public', {'height': 243}.to
 </code></pre>
 
 <p>Sure enough! We now successfully debugged and sent a request from Ruby.</p>
+
+<h3 id="with-postman">With Postman</h3>
+
+<p><a href="https://www.getpostman.com/">Postman</a> is a desktop application letting you setup and send out http requests, helping you
+debug or explore eg REST APIs.</p>
+
+<p>After starting Postman, you get a window with a text field to enter a URL and a send button:</p>
+
+
+<figure >
+    
+        <img src="https://rb2nem.github.io/nem-dev-guide/images/debugging_postman_start.png" />
+    
+    
+    <figcaption>
+        <h4>Postman Start Window</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>It defaults to sending a GET request. Let&rsquo;s try it out with the request to get the current chain height.
+As a reminder (see <a href="04-blockchain-requests">blockchain requests</a>), this is a GET request sent to <code>/chain_height</code>.
+Entering the URL <code>62.75.171.41:7890/chain/height</code> and clicking <code>Send</code> results in this state:</p>
+
+
+<figure >
+    
+        <img src="https://rb2nem.github.io/nem-dev-guide/images/debugging_postman_get.png" />
+    
+    
+    <figcaption>
+        <h4>Postman Get Request</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>But Postman really shines when you want to test a POST request, such as we did in the previous section, to get the block
+at a certain height. We need to send out a <a href="https://bob.nem.ninja/docs/#getting-a-block-with-a-given-height">POST request to /block/at/public</a>,
+with the height requested <a href="https://bob.nem.ninja/docs/#blockHeight">sent as json in the request&rsquo;s body</a>.</p>
+
+<p>Creating a new tab, we can enter the needed info in Postman:</p>
+
+
+<figure >
+    
+        <img src="https://rb2nem.github.io/nem-dev-guide/images/debugging_postman_post1.png" />
+    
+    
+    <figcaption>
+        <h4>Postman Post Request</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>Clicking send results in an error message in the response, stating text/plain content type not being supported:</p>
+
+
+<figure >
+    
+        <img src="https://rb2nem.github.io/nem-dev-guide/images/debugging_postman_error1.png" />
+    
+    
+    <figcaption>
+        <h4>Postman Post Request Error</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>We can however specify a <code>application.json</code> content type to be set. This is specified in the HTTP header <code>Content-Type</code>,
+hence we open the Headers tab, and add the said header. There is autocomplete available for the key and the value, so
+just typing <code>content</code> in the key field will list all headers Postman knows that contain <code>content</code>. For the value, you can just type
+<code>json</code> and you&rsquo;ll get the <code>application/json</code> suggestion. Here&rsquo;s the status before pressing send:</p>
+
+
+<figure >
+    
+        <img src="https://rb2nem.github.io/nem-dev-guide/images/debugging_postman_content_type.png" />
+    
+    
+    <figcaption>
+        <h4>Postman Post Request Content-Type</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>With these adjustments, we press send and get the successful answer:</p>
+
+
+<figure >
+    
+        <img src="https://rb2nem.github.io/nem-dev-guide/images/debugging_postman_result.png" />
+    
+    
+    <figcaption>
+        <h4>Postman Post Request Content-Type</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>This is a valuable tool that can help you explore the API, tweaking parameters of a request until
+it works, and then incorporating what you leant in your application.</p>
 
 <h2 id="debugging-websockets">Debugging Websockets</h2>
 

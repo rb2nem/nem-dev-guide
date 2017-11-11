@@ -142,7 +142,7 @@ A Mosaic is always created in a namespace. A namespace is analog to a domain nam
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://rb2nem.github.io/nem-dev-guide/80-debugging/</guid>
-      <description>Debugging REST API requests The docker environment accompanying this guide provides mitmweb to inspect requests sent to the NIS instance running in the container. This section will show how to use it.
+      <description>Debugging REST API requests With the devguide containers The docker environment accompanying this guide provides mitmweb to inspect requests sent to the NIS instance running in the container. This section will show how to use it.
 We will send requests to out NIS in the ruby language, using the rest-client gem. We will try to get the block at the current height, which, as we have already seen, is obtained by sending a POST request to /block/public/at with a JSON payload telling the height of the block we want to retrieve.</description>
     </item>
     
