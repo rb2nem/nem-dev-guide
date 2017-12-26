@@ -14,7 +14,7 @@ cryptographic keypair associated to a mutable state stored on the NEM
 blockchain. The state of the account is modified when transactions involving it
 are accepted by the network. 
 
-Nem is using the [Ed25519 publick key signature system](https://ed25519.cr.yp.to/) with the
+Nem is using the [Ed25519 publik key signature system](https://ed25519.cr.yp.to/) with the
 SHA3 hashing algorithm.
 Ed25519 was [introduced](https://ed25519.cr.yp.to/ed25519-20110926.pdf) when sha3 was not yet
 standardised, and it uses the SHA512 hashing algorithm (the paper names it Ed25519-SHA-512).
